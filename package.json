@@ -1,0 +1,16 @@
+{
+  "name": "dojo-typescript-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "make": "tsc --target es5 --outDir target/ --module commonjs gen.ts",
+    "run": "node target/gen.js"
+  },
+  "author": "",
+  "license": "Apache 2.0",
+  "devDependencies": {
+    "typescript": "^1.4.1"
+  }
+}

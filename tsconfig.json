@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": false,
+        "noLib": false,
+        "outDir": "target/"
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!./node_modules/**/*.ts"
+    ],
+    "files": [
+        "./DojoDetailsInterface.ts",
+        "./gen.ts",
+        "./typings/node-0.10.d.ts",
+        "./typings/node-0.11.d.ts"
+    ]
+}
