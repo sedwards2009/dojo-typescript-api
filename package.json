@@ -4,13 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "make": "tsc --target es5 --outDir target/ --module commonjs gen.ts",
-    "run": "node target/gen.js"
+    "test": "node target/test.js",
+    "make": "tsc --target es6 --outDir target/ --module commonjs main.ts test.ts",
+    "run": "node target/main.js"
   },
   "author": "",
   "license": "Apache 2.0",
   "devDependencies": {
     "typescript": "^1.4.1"
+  },
+  "dependencies": {
+    "shelljs": "^0.3.0",
+    "tsd": "^0.5.7"
   }
 }

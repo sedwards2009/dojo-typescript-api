@@ -1,6 +1,5 @@
-/// <reference path="typings/node-0.11.d.ts" />
-
-import fs = require('fs');
+/// <reference path="typings/tsd.d.ts" />
+"use strict";
 import stream = require('stream');
 
 import DojoDetailsInterface = require('./DojoDetailsInterface');
@@ -11,44 +10,34 @@ type DojoProperty = DojoDetailsInterface.DojoProperty;
 type DojoMethod = DojoDetailsInterface.DojoMethod;
 type DojoParameter = DojoDetailsInterface.DojoParameter;
 
-/*var DETAILS_FILENAME = 'data/details-1.10.json';*/
-var DETAILS_FILENAME = 'data/small-details-1.10.json';
-
 function log(...data: string[]): void {
   console.log(data.join(" "));
 }
 
 function indent(level: number): string {
-  var result = "";
-  for (var i=0; i<level; i++) {
+  "use strict";
+  let result = "";
+  for (let i=0; i<level; i++) {
     result += "  ";
   }
   return result;
 }
 
-function main() {
-
-  log("Reading ", DETAILS_FILENAME);
-
-  var details: DojoDetailsInterface = <DojoDetailsInterface> JSON.parse(fs.readFileSync(DETAILS_FILENAME, 'utf8'));
-  log(formatAPI(details));
-}
-
-function formatAPI(details: DojoDetailsInterface): string {
-  var result = "";
-  for (var key in details) {
+export function formatAPI(details: DojoDetailsInterface): string {
+  let result = "";
+  for (let key in details) {
     result += formatModule(details[key]);
   }
   return result;
 }
 
 function formatModule(namespace: DojoNamespace, level: number=0): string {
-  var result = "";
-  var resultTail = "";
+  let result = "";
+  let resultTail = "";
 
   log("Location: " + namespace.location + "\n");
-  var name = namespace.location;
-  var parts = name.split("/");
+  const name = namespace.location;
+  const parts = name.split("/");
 
   parts.slice(0, -1).forEach( (p) => {
       result += indent(level) + "declare module " + p + " {\n";
@@ -57,7 +46,7 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
     });
 
   if (namespace.type === 'object') {
-    result += indent(level) + "interface " + parts[parts.length-1] + " {\n";
+    result += indent(level) + "interface " + translateInterfaceName(parts[parts.length-1]) + " {\n";
     resultTail = indent(level) + "}\n" + resultTail;
 
     level++;
@@ -70,7 +59,22 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
     }
   }
 
+  const interfaceName = translateInterfaceName(namespace.location);
+  resultTail += `declare module "${namespace.location}" {
+  var exp: ${interfaceName};
+  export = exp;
+}
+`;
   return result + resultTail;
+}
+
+function translateInterfaceName(name: string): string {
+  const parts = name.split("/");
+  if (parts[parts.length-1] === "string") {
+    parts[parts.length-1] = "string_";
+  }
+
+  return parts.join(".");
 }
 
 function formatProperties(properties: DojoProperty[], level: number): string {
@@ -88,8 +92,8 @@ function formatMethod(method: DojoMethod, level: number): string {
 }
 
 function formatMethodDocs(method: DojoMethod, level: number): string {
-  var result = indent(level) + "/**\n";
-  var docIndent = indent(level) + " * ";
+  let result = indent(level) + "/**\n";
+  const docIndent = indent(level) + " * ";
   if (method.summary !== undefined) {
     result += prefixLines(htmlToPlainLines(method.summary), docIndent).join("\n") + "\n";
   }
@@ -107,7 +111,7 @@ function formatMethodDocs(method: DojoMethod, level: number): string {
 }
 
 function htmlToPlainLines(text: string): string[] {
-  var parts = text.split("\n");
+  const parts = text.split("\n");
   return parts.map( (t) => t.trim() ).filter( (t) => t !== "").map(stripHtml);
 }
 
@@ -154,7 +158,7 @@ function formatTypes(types: string[]): string {
 }
 
 function formatType(t: string): string {
-  var result = t.trim();
+  let result = t.trim();
 
   // This mapping below has been happily taken from
   // https://github.com/vansimke/DojoTypeDescriptionGenerator/blob/master/DojoTypeDescriptor/Scripts/app/importers/BaseImporter.ts
@@ -489,4 +493,3 @@ function formatType(t: string): string {
   }
   return result;
 }
-main();
