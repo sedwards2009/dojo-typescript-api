@@ -26,6 +26,8 @@ export interface DojoMethod {
 export interface DojoNamespace {
   location: string;
   type: string;
+  classlike?: boolean;
+  superclass?: string;
   parameters?: DojoParameter[];
   returnTypes: string[];
   summary: string;

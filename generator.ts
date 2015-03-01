@@ -45,18 +45,14 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
       level++;
     });
 
+  // Objects acting as namespaces and containing functions.
   if (namespace.type === 'object') {
-    result += indent(level) + "interface " + translateInterfaceName(parts[parts.length-1]) + " {\n";
-    resultTail = indent(level) + "}\n" + resultTail;
+    result += formatNamespaceObject(namespace, level);
+  }
 
-    level++;
-    if (namespace.properties !== undefined) {
-      result += formatProperties(namespace.properties, level);
-    }
-
-    if (namespace.methods !== undefined) {
-      result += formatMethods(namespace.methods, level);
-    }
+  // Class
+  if (namespace.type === 'constructor' && namespace.classlike) {
+    result += formatClass(namespace, level);
   }
 
   const interfaceName = translateInterfaceName(namespace.location);
@@ -65,6 +61,54 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
   export = exp;
 }
 `;
+  return result + resultTail;
+}
+
+function formatNamespaceObject(namespace: DojoNamespace, level: number): string {
+  let result = "";
+  let resultTail = "";
+  const name = namespace.location;
+  const parts = name.split("/");
+
+  result += indent(level) + "interface " + translateInterfaceName(parts[parts.length-1]) + " {\n";
+  resultTail = indent(level) + "}\n" + resultTail;
+
+  level++;
+  if (namespace.properties !== undefined) {
+    result += formatProperties(namespace.properties, level);
+  }
+
+  if (namespace.methods !== undefined) {
+    result += formatMethods(namespace.methods, level);
+  }
+  return result + resultTail;
+}
+
+function formatClass(namespace: DojoNamespace, level: number): string {
+  let result = "";
+  let resultTail = "";
+  const name = namespace.location;
+  const parts = name.split("/");
+
+  result += indent(level) + "class " + translateInterfaceName(parts[parts.length-1]);
+  if (namespace.superclass !== undefined && namespace.superclass !== "") {
+    result += " extends " + formatType(namespace.superclass);
+  }
+  result += " {\n";
+  resultTail = indent(level) + "}\n" + resultTail;
+
+  level++;
+
+  result += indent(level) + "constructor(" + formatParameters(namespace.parameters) + ");\n\n";
+
+  if (namespace.properties !== undefined) {
+    result += formatProperties(namespace.properties, level);
+  }
+
+  if (namespace.methods !== undefined) {
+    result += formatMethods(namespace.methods, level);
+  }
+
   return result + resultTail;
 }
 
@@ -78,7 +122,7 @@ function translateInterfaceName(name: string): string {
 }
 
 function formatProperties(properties: DojoProperty[], level: number): string {
-  return properties.map( (prop) => indent(level) + prop.name + ": " + formatTypes(prop.types) + ";").join("\n");
+  return properties.map( (prop) => indent(level) + prop.name + ": " + formatTypes(prop.types) + ";\n\n").join("");
 }
 
 function formatMethods(methods: DojoMethod[], level: number): string {
@@ -158,12 +202,13 @@ function formatTypes(types: string[]): string {
 }
 
 function formatType(t: string): string {
-  let result = t.trim();
+  const parts = t.trim().split("/");
 
   // This mapping below has been happily taken from
   // https://github.com/vansimke/DojoTypeDescriptionGenerator/blob/master/DojoTypeDescriptor/Scripts/app/importers/BaseImporter.ts
   // It cleans up a lot of the problems in the Dojo docs.
-  switch(t.trim()) {
+  let result = parts[parts.length-1];
+  switch(parts[parts.length-1]) {
     case "treeNode":
       result = "dijit/Tree/_TreeNode";
       break;
@@ -491,5 +536,7 @@ function formatType(t: string): string {
     default:
       break;
   }
-  return result;
+
+  parts[parts.length-1] = result;
+  return parts.join("/").split("/").join(".");
 }
