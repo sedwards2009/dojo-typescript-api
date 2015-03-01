@@ -1,6 +1,9 @@
 /// <reference path="typings/tsd.d.ts" />
 "use strict";
 
+// Unittests for use with nodeunit https://github.com/caolan/nodeunit
+
+import nodeunit = require('nodeunit');
 import fs = require('fs');
 import path = require('path');
 import child_process = require('child_process');
@@ -9,16 +12,22 @@ import shelljs = require('shelljs');
 import generator = require('./generator');
 import DojoDetailsInterface = require('./DojoDetailsInterface');
 
+// Utility functions.
+
 const DETAILS_FILENAME = 'data/details-1.10.json';
 const details = readDetails(DETAILS_FILENAME);
 const TMP_DIR = "target/tmp";
 const HEADER_FILENAME = "header.d.ts";
 const CODE_FILENAME = "code.ts";
-function setup(): void {
+
+// Clean tmp before each test.
+export function setUp(callback: Function): void {
   if(shelljs.test('-e', TMP_DIR)) {
     shelljs.rm("-rf", TMP_DIR);
   }
   shelljs.mkdir(TMP_DIR);
+
+  callback();
 }
 
 function readDetails(filename: string): DojoDetailsInterface.DojoDetailsInterface {
@@ -26,7 +35,7 @@ function readDetails(filename: string): DojoDetailsInterface.DojoDetailsInterfac
   return details;
 }
 
-function tsCompile(headerText: string, codeText: string): void {
+function tsCompile(headerText: string, codeText: string): boolean {
   fs.writeFileSync(path.join(TMP_DIR, HEADER_FILENAME), headerText, { encoding: "utf8"});
 
   const completeCode = `/// <reference path="./${HEADER_FILENAME}" />\n${codeText}`;
@@ -35,25 +44,30 @@ function tsCompile(headerText: string, codeText: string): void {
     child_process.execSync(`tsc --target es6 --module commonjs --outDir ${TMP_DIR} ${path.join(TMP_DIR, CODE_FILENAME)}`);
   } catch(e) {
     console.log(formatChildProcessError(e));
+    return false;
   }
+  return true;
 }
 
 function formatChildProcessError(err: {stdout: Buffer[]}): string {
   return "Error:\n" + err.stdout.toString();
 }
 
-function testDojoString() {
+//-------------------------------------------------------------------------
+// Tests begin here.
+
+
+// A simple compile test of a tiny part of the Dojo API.
+export function testDojoString(test: nodeunit.Test): void {
   var textDetails: DojoDetailsInterface.DojoDetailsInterface = {};
   textDetails["dojo/string"] = details["dojo/string"];
 
 
   const headerText = generator.formatAPI(textDetails);
 
-  tsCompile(headerText, `
+  test.ok(tsCompile(headerText, `
   import dojoString = require("dojo/string");
 
-`);
+`));
+  test.done();
 }
-
-setup();
-testDojoString();

@@ -2,9 +2,10 @@
   "name": "dojo-typescript-api",
   "version": "1.0.0",
   "description": "",
+  "repository": "https://github.com/sedwards2009/dojo-typescript-api",
   "main": "index.js",
   "scripts": {
-    "test": "node target/test.js",
+    "test": "nodeunit target/test.js",
     "make": "tsc --target es6 --outDir target/ --module commonjs main.ts test.ts",
     "run": "node target/main.js"
   },
@@ -14,6 +15,7 @@
     "typescript": "^1.4.1"
   },
   "dependencies": {
+    "nodeunit": "^0.9.0",
     "shelljs": "^0.3.0",
     "tsd": "^0.5.7"
   }
