@@ -10,7 +10,7 @@ This is fairly small TypeScript program which runs on modern node/iojs versions.
 * After cloning this repo do a `npm install` to grab the needed modules.
 * `npm run make` builds the software.
 * `npm run run` runs the generator itself.
-* The generated output it just being thrown up onto the console at the moment.
+* The generated output is written to the `output` directory.
 * `npm run test` runs the unit tests.
 
 The `details.json` file for Dojo 1.10 is already included in the `data` directory.

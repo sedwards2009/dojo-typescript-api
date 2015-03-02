@@ -12,7 +12,8 @@
         "./**/*.ts",
         "!./node_modules/**/*.ts",
         "!./target/**/*.ts",
-        "!./typings/**/*.ts"
+        "!./typings/**/*.ts",
+        "!./output/**/*.ts",
     ],
     "files": [
         "./DojoDetailsInterface.ts",

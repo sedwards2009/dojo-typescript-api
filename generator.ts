@@ -35,7 +35,7 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
   let result = "";
   let resultTail = "";
 
-  log("Location: " + namespace.location + "\n");
+  /*log("Location: " + namespace.location + "\n");*/
   const name = namespace.location;
   const parts = name.split("/");
 
@@ -99,7 +99,7 @@ function formatClass(namespace: DojoNamespace, level: number): string {
 
   level++;
 
-  result += indent(level) + "constructor(" + formatParameters(namespace.parameters) + ");\n\n";
+  result += indent(level) + "constructor(" + (namespace.parameters !== undefined ? formatParameters(namespace.parameters) : "") + ");\n\n";
 
   if (namespace.properties !== undefined) {
     result += formatProperties(namespace.properties, level);
@@ -145,11 +145,12 @@ function formatMethodDocs(method: DojoMethod, level: number): string {
     result += prefixLines(htmlToPlainLines(method.description), docIndent).join("\n") + "\n";
   }
   result += docIndent + "\n";
-  result += method.parameters.map(
-    (param) => docIndent + "@param " + param.name + " " +
-      (param.usage === "optional" ? "Optional. " : "") +
-      (param.summary !== undefined ? htmlToPlainLines(param.summary).join("\n" + docIndent + "          ") + "\n" : "")).join("");
-
+  if (method.parameters !== undefined) {
+    result += method.parameters.map(
+      (param) => docIndent + "@param " + param.name + " " +
+        (param.usage === "optional" ? "Optional. " : "") +
+        (param.summary !== undefined ? htmlToPlainLines(param.summary).join("\n" + docIndent + "          ") + "\n" : "")).join("");
+  }
   result += indent(level) + " */\n";
   return result;
 }
