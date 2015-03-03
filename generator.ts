@@ -46,7 +46,7 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
     });
 
   // Objects acting as namespaces and containing functions.
-  if (namespace.type === 'object') {
+  if (namespace.type === 'object' || namespace.type === 'instance') {
     result += formatNamespaceObject(namespace, level);
   }
 
