@@ -13,7 +13,7 @@
         "!./node_modules/**/*.ts",
         "!./target/**/*.ts",
         "!./typings/**/*.ts",
-        "!./output/**/*.ts",
+        "!./output/**/*.ts"
     ],
     "files": [
         "./DojoDetailsInterface.ts",
