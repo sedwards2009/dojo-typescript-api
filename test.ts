@@ -53,21 +53,29 @@ function formatChildProcessError(err: {stdout: Buffer[]}): string {
   return "Error:\n" + err.stdout.toString();
 }
 
+function compileTest(test: nodeunit.Test, moduleName: string): void {
+  var textDetails: DojoDetailsInterface.DojoDetailsInterface = {};
+  textDetails[moduleName] = details[moduleName];
+
+
+  const headerText = generator.formatAPI(textDetails);
+
+  test.ok(tsCompile(headerText, `
+  import dojoString = require("${moduleName}");
+
+`));
+  test.done();
+}
+
 //-------------------------------------------------------------------------
 // Tests begin here.
 
 
 // A simple compile test of a tiny part of the Dojo API.
 export function testDojoString(test: nodeunit.Test): void {
-  var textDetails: DojoDetailsInterface.DojoDetailsInterface = {};
-  textDetails["dojo/string"] = details["dojo/string"];
+  compileTest(test, "dojo/string");
+}
 
-
-  const headerText = generator.formatAPI(textDetails);
-
-  test.ok(tsCompile(headerText, `
-  import dojoString = require("dojo/string");
-
-`));
-  test.done();
+export function testDojoRequest(test: nodeunit.Test): void {
+  compileTest(test, "dojo/request");
 }
