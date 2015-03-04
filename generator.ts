@@ -202,14 +202,12 @@ function formatTypes(types: string[]): string {
   }
 }
 
-function formatType(t: string): string {
-  const parts = t.trim().split("/");
-
+export function formatType(t: string): string {
   // This mapping below has been happily taken from
   // https://github.com/vansimke/DojoTypeDescriptionGenerator/blob/master/DojoTypeDescriptor/Scripts/app/importers/BaseImporter.ts
   // It cleans up a lot of the problems in the Dojo docs.
-  let result = parts[parts.length-1];
-  switch(parts[parts.length-1]) {
+  let result = t;
+  switch(t) {
     case "treeNode":
       result = "dijit/Tree/_TreeNode";
       break;
@@ -538,6 +536,5 @@ function formatType(t: string): string {
       break;
   }
 
-  parts[parts.length-1] = result;
-  return parts.join("/").split("/").join(".");
+  return result.split(/\//g).join(".");
 }

@@ -76,6 +76,7 @@ export function testDojoString(test: nodeunit.Test): void {
   compileTest(test, "dojo/string");
 }
 
-export function testDojoRequest(test: nodeunit.Test): void {
-  compileTest(test, "dojo/request");
+export function testReturnTypePromise(test: nodeunit.Test): void {
+  test.equal(generator.formatType("dojo/promise/Promise"), "dojo.promise.Promise");
+  test.done();
 }
