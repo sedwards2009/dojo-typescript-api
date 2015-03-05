@@ -60,7 +60,7 @@ function compileTest(test: nodeunit.Test, moduleNames: string[]): void {
     textDetails[name] = details[name];
   } );
 
-  const importText = moduleNames.map( (name) => "import " + name.replace(/\//g,"_").replace(/\./g,"_") + " = require('" + name + "');\n" ).join("");
+  const importText = moduleNames.map( (name) => "import " + name.replace(/[/.-]/g,"_") + " = require('" + name + "');\n" ).join("");
   const headerText = generator.formatAPI(textDetails);
 
   test.ok(tsCompile(headerText, importText));
@@ -69,7 +69,6 @@ function compileTest(test: nodeunit.Test, moduleNames: string[]): void {
 
 //-------------------------------------------------------------------------
 // Tests begin here.
-
 
 // A simple compile test of a tiny part of the Dojo API.
 export function testDojoString(test: nodeunit.Test): void {
@@ -89,4 +88,14 @@ export function testDojoRequest(test: nodeunit.Test): void {
 export function testNormalizeDash(test: nodeunit.Test): void {
   test.equal(generator.normalizeName("dojo/dom-attr"), "dojo.dom_attr");
   test.done();
+}
+
+export function testDojoModule(test: nodeunit.Test): void {
+  const moduleList: string[] = [];
+  for (let key in details) {
+    if (key.indexOf("dojo/") === 0) {
+      moduleList.push(key);
+    }
+  }
+  compileTest(test, moduleList);
 }

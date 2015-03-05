@@ -145,12 +145,13 @@ export function normalizeName(name: string): string {
 }
 
 function translateInterfaceName(name: string): string {
+  const underscoreList: string[] = ["string", "default"];
   const parts = name.split("/");
-  if (parts[parts.length-1] === "string") {
-    parts[parts.length-1] = "string_";
+  if (underscoreList.indexOf(parts[parts.length-1]) !== -1) {
+    parts[parts.length-1] += "_";
   }
 
-  return parts.join(".");
+  return parts.join(".").replace(/[-]/g, "_");
 }
 
 function formatProperties(properties: DojoProperty[], level: number): string {
@@ -167,8 +168,16 @@ function formatMethod(method: DojoMethod, level: number): string {
       indent(level) + method.name + "(" + formatParameters(method.parameters) + ");";
   } else {
     return formatDocs(method, level) +
-      indent(level) + method.name + "(" + formatParameters(method.parameters) + "): " +
+      indent(level) + quoteName(method.name) + "(" + formatParameters(method.parameters) + "): " +
       formatReturnTypes(method.returnTypes) + ";\n";
+  }
+}
+
+function quoteName(name: string): string {
+  if (name.indexOf("-") !== -1) {
+    return '"' + name + '"';
+  } else {
+    return name;
   }
 }
 
@@ -335,6 +344,7 @@ export function formatType(t: string): string {
       break;
     case "Object":
     case "Object.":
+    case "Object?":
     case "object":
     case "Container.__ContainerArgs":
     case "CriteriaBox":
@@ -364,12 +374,14 @@ export function formatType(t: string): string {
       result = "Object[]";
       break;
     case "Anything":
+    case "Anything?":
     case "anything":
     case "any":
     case "return the plain value since it was found;":
       result = "any";
       break;
     case "Object":
+    case "JSON Object":
     case "SWF":
     case "CustomEventMethod":
     case "Error object":
@@ -379,6 +391,7 @@ export function formatType(t: string): string {
       result = "Object[]";
       break;
     case "Boolean":
+    case "Boolean?":
     case "Bookean":
     case "boolean":
     case "bool":
@@ -387,6 +400,7 @@ export function formatType(t: string): string {
       break;
     case "String":
     case "string":
+    case "String?":
     case "attribute-name-string":
     case "String hebrew":
     case "String hebrew year":
@@ -557,6 +571,7 @@ export function formatType(t: string): string {
     case "Key Event":
       result = "KeyboardEvent";
       break;
+    case "Promise?":
     case "Promise":
       result = "dojo/promise/Promise";
       break;
