@@ -9,6 +9,7 @@ type DojoNamespace = DojoDetailsInterface.DojoNamespace;
 type DojoProperty = DojoDetailsInterface.DojoProperty;
 type DojoMethod = DojoDetailsInterface.DojoMethod;
 type DojoParameter = DojoDetailsInterface.DojoParameter;
+type DojoDocumentedEntity = DojoDetailsInterface.DojoDocumentedEntity;
 
 function log(...data: string[]): void {
   console.log(data.join(" "));
@@ -37,21 +38,31 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
 
   /*log("Location: " + namespace.location + "\n");*/
   const name = namespace.location;
-  const parts = name.split("/");
+  const parts = normalizeName(name).split(/\./g);
 
   parts.slice(0, -1).forEach( (p) => {
-      result += indent(level) + "declare module " + p + " {\n";
+      result += indent(level) + (level === 0 ? "declare " : "") + "module " + p + " {\n";
       resultTail = indent(level) + "}\n" + resultTail;
       level++;
     });
-
+    
+  const lastPart = parts[parts.length-1];
+  
+  // Types which start with __ are Dojo's (fake) way of documenting interfaces.
+  const isDojoInterface = lastPart.indexOf("__") === 0;
+  
   // Objects acting as namespaces and containing functions.
-  if (namespace.type === 'object' || namespace.type === 'instance') {
+  if (namespace.type === 'object' || namespace.type === 'instance' || isDojoInterface) {
     result += formatNamespaceObject(namespace, level);
-  }
-
-  // Class
-  if (namespace.type === 'constructor' && namespace.classlike) {
+    
+  } else if (namespace.type === 'function') {
+    result += formatFunction(namespace, level);
+    
+    if (namespace.methods !== undefined && namespace.methods.some( (m) => m.name === 'constructor' )) {
+      result += formatNamespaceObject(namespace, level);
+    }
+  } else if (namespace.type === 'constructor' && namespace.classlike) {
+    // Class
     result += formatClass(namespace, level);
   }
 
@@ -68,7 +79,7 @@ function formatNamespaceObject(namespace: DojoNamespace, level: number): string 
   let result = "";
   let resultTail = "";
   const name = namespace.location;
-  const parts = name.split("/");
+  const parts = normalizeName(name).split(/\./g);
 
   result += indent(level) + "interface " + translateInterfaceName(parts[parts.length-1]) + " {\n";
   resultTail = indent(level) + "}\n" + resultTail;
@@ -84,15 +95,32 @@ function formatNamespaceObject(namespace: DojoNamespace, level: number): string 
   return result + resultTail;
 }
 
+function formatFunction(namespace: DojoNamespace, level: number): string {
+  let result = "";
+  let resultTail = "";
+  const name = namespace.location;
+  const parts = normalizeName(name).split(/\./g);
+
+  result += formatDocs(namespace, level);
+  result += indent(level) + "interface " + translateInterfaceName(parts[parts.length-1]) + " {\n";
+  resultTail = indent(level) + "}\n" + resultTail;
+
+  level++;
+  result += indent(level) + "(" + formatParameters(namespace.parameters) + "): " +
+    formatReturnTypes(namespace.returnTypes) + ";\n";
+
+  return result + resultTail;
+}
+
 function formatClass(namespace: DojoNamespace, level: number): string {
   let result = "";
   let resultTail = "";
   const name = namespace.location;
-  const parts = name.split("/");
+  const parts = normalizeName(name).split(/\./g);
 
   result += indent(level) + "class " + translateInterfaceName(parts[parts.length-1]);
   if (namespace.superclass !== undefined && namespace.superclass !== "") {
-    result += " extends " + formatType(namespace.superclass);
+    result += " implements " + formatType(namespace.superclass);
   }
   result += " {\n";
   resultTail = indent(level) + "}\n" + resultTail;
@@ -110,6 +138,10 @@ function formatClass(namespace: DojoNamespace, level: number): string {
   }
 
   return result + resultTail;
+}
+
+function normalizeName(name: string): string {
+  return name.split(/\//g).join(".");
 }
 
 function translateInterfaceName(name: string): string {
@@ -130,23 +162,28 @@ function formatMethods(methods: DojoMethod[], level: number): string {
 }
 
 function formatMethod(method: DojoMethod, level: number): string {
-  return formatMethodDocs(method, level) +
-    indent(level) + method.name + "(" + formatParameters(method.parameters) + "): " +
-    formatReturnTypes(method.returnTypes) + ";\n";
+  if (method.name === 'constructor') {
+    return formatDocs(method, level) +
+      indent(level) + method.name + "(" + formatParameters(method.parameters) + ");";
+  } else {
+    return formatDocs(method, level) +
+      indent(level) + method.name + "(" + formatParameters(method.parameters) + "): " +
+      formatReturnTypes(method.returnTypes) + ";\n";
+  }
 }
 
-function formatMethodDocs(method: DojoMethod, level: number): string {
+function formatDocs(entity: DojoDocumentedEntity, level: number): string {
   let result = indent(level) + "/**\n";
   const docIndent = indent(level) + " * ";
-  if (method.summary !== undefined) {
-    result += prefixLines(htmlToPlainLines(method.summary), docIndent).join("\n") + "\n";
+  if (entity.summary !== undefined) {
+    result += prefixLines(htmlToPlainLines(entity.summary), docIndent).join("\n") + "\n";
   }
-  if (method.description !== undefined) {
-    result += prefixLines(htmlToPlainLines(method.description), docIndent).join("\n") + "\n";
+  if (entity.description !== undefined) {
+    result += prefixLines(htmlToPlainLines(entity.description), docIndent).join("\n") + "\n";
   }
   result += docIndent + "\n";
-  if (method.parameters !== undefined) {
-    result += method.parameters.map(
+  if (entity.parameters !== undefined) {
+    result += entity.parameters.map(
       (param) => docIndent + "@param " + param.name + " " +
         (param.usage === "optional" ? "Optional. " : "") +
         (param.summary !== undefined ? htmlToPlainLines(param.summary).join("\n" + docIndent + "          ") + "\n" : "")).join("");
@@ -536,5 +573,5 @@ export function formatType(t: string): string {
       break;
   }
 
-  return result.split(/\//g).join(".");
+  return normalizeName(result);
 }

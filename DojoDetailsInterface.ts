@@ -12,27 +12,25 @@ export interface DojoProperty {
   from: string;
 }
 
-export interface DojoMethod {
-  name: string;
-  scope: string;
-  from: string;
-  parameters: DojoParameter[];
+export interface DojoDocumentedEntity {
+  parameters?: DojoParameter[];
   returnTypes: string[];
   summary: string;
   description: string;
   examples: string;
 }
 
-export interface DojoNamespace {
+export interface DojoMethod extends DojoDocumentedEntity {
+  name: string;
+  scope: string;
+  from: string;  
+}
+
+export interface DojoNamespace extends DojoDocumentedEntity {
   location: string;
   type: string;
   classlike?: boolean;
   superclass?: string;
-  parameters?: DojoParameter[];
-  returnTypes: string[];
-  summary: string;
-  description: string;
-  examples: string;
   properties?: DojoProperty[];
   methods?: DojoMethod[];
 }

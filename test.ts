@@ -53,17 +53,17 @@ function formatChildProcessError(err: {stdout: Buffer[]}): string {
   return "Error:\n" + err.stdout.toString();
 }
 
-function compileTest(test: nodeunit.Test, moduleName: string): void {
+function compileTest(test: nodeunit.Test, ...moduleNames: string[]): void {
   var textDetails: DojoDetailsInterface.DojoDetailsInterface = {};
-  textDetails[moduleName] = details[moduleName];
+  
+  moduleNames.forEach( (name) => {
+    textDetails[name] = details[name];
+  } );
 
-
+  const importText = moduleNames.map( (name) => "import " + name.replace(/\//g,"_").replace(/\./g,"_") + " = require('" + name + "');\n" ).join("");
   const headerText = generator.formatAPI(textDetails);
 
-  test.ok(tsCompile(headerText, `
-  import dojoString = require("${moduleName}");
-
-`));
+  test.ok(tsCompile(headerText, importText));
   test.done();
 }
 
@@ -79,4 +79,9 @@ export function testDojoString(test: nodeunit.Test): void {
 export function testReturnTypePromise(test: nodeunit.Test): void {
   test.equal(generator.formatType("dojo/promise/Promise"), "dojo.promise.Promise");
   test.done();
+}
+
+export function testDojoRequest(test: nodeunit.Test): void {
+  compileTest(test, "dojo/request", "dojo/request.__BaseOptions", "dojo/request.__MethodOptions",
+    "dojo/request.__Options", "dojo/request.__Promise", "dojo/promise/Promise");
 }
