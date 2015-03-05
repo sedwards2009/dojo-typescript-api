@@ -53,9 +53,9 @@ function formatChildProcessError(err: {stdout: Buffer[]}): string {
   return "Error:\n" + err.stdout.toString();
 }
 
-function compileTest(test: nodeunit.Test, ...moduleNames: string[]): void {
+function compileTest(test: nodeunit.Test, moduleNames: string[]): void {
   var textDetails: DojoDetailsInterface.DojoDetailsInterface = {};
-  
+
   moduleNames.forEach( (name) => {
     textDetails[name] = details[name];
   } );
@@ -73,7 +73,7 @@ function compileTest(test: nodeunit.Test, ...moduleNames: string[]): void {
 
 // A simple compile test of a tiny part of the Dojo API.
 export function testDojoString(test: nodeunit.Test): void {
-  compileTest(test, "dojo/string");
+  compileTest(test, ["dojo/string"]);
 }
 
 export function testReturnTypePromise(test: nodeunit.Test): void {
@@ -82,6 +82,11 @@ export function testReturnTypePromise(test: nodeunit.Test): void {
 }
 
 export function testDojoRequest(test: nodeunit.Test): void {
-  compileTest(test, "dojo/request", "dojo/request.__BaseOptions", "dojo/request.__MethodOptions",
-    "dojo/request.__Options", "dojo/request.__Promise", "dojo/promise/Promise");
+  compileTest(test, ["dojo/request", "dojo/request.__BaseOptions", "dojo/request.__MethodOptions",
+    "dojo/request.__Options", "dojo/request.__Promise", "dojo/promise/Promise"]);
+}
+
+export function testNormalizeDash(test: nodeunit.Test): void {
+  test.equal(generator.normalizeName("dojo/dom-attr"), "dojo.dom_attr");
+  test.done();
 }

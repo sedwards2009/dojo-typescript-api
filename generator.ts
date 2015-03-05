@@ -140,8 +140,8 @@ function formatClass(namespace: DojoNamespace, level: number): string {
   return result + resultTail;
 }
 
-function normalizeName(name: string): string {
-  return name.split(/\//g).join(".");
+export function normalizeName(name: string): string {
+  return name.replace(/\//g, ".").replace(/-/g, "_");
 }
 
 function translateInterfaceName(name: string): string {
