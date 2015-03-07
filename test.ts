@@ -60,7 +60,16 @@ function compileTest(test: nodeunit.Test, moduleNames: string[]): void {
     textDetails[name] = details[name];
   } );
 
-  const importText = moduleNames.map( (name) => "import " + name.replace(/[/.-]/g,"_") + " = require('" + name + "');\n" ).join("");
+  const seenModules = new Set<string>();
+  
+  const importText = moduleNames.map( (name) => {
+    let normalizedName = name.replace(/[/.-]/g,"_");
+    if (seenModules.has(normalizedName)) {
+      normalizedName += "_";
+    }
+    seenModules.add(normalizedName);
+    return "import " + normalizedName + " = require('" + name + "');\n"
+  } ).join("");
   const headerText = generator.formatAPI(textDetails);
 
   test.ok(tsCompile(headerText, importText));
