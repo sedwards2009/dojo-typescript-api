@@ -45,19 +45,19 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
       resultTail = indent(level) + "}\n" + resultTail;
       level++;
     });
-    
+
   const lastPart = parts[parts.length-1];
-  
+
   // Types which start with __ are Dojo's (fake) way of documenting interfaces.
   const isDojoInterface = lastPart.indexOf("__") === 0;
-  
+
   // Objects acting as namespaces and containing functions.
   if (namespace.type === 'object' || namespace.type === 'instance' || isDojoInterface) {
     result += formatNamespaceObject(namespace, level);
-    
+
   } else if (namespace.type === 'function') {
     result += formatFunction(namespace, level);
-    
+
     if (namespace.methods !== undefined && namespace.methods.some( (m) => m.name === 'constructor' )) {
       result += formatNamespaceObject(namespace, level);
     }
@@ -106,8 +106,9 @@ function formatFunction(namespace: DojoNamespace, level: number): string {
   resultTail = indent(level) + "}\n" + resultTail;
 
   level++;
-  result += indent(level) + "(" + formatParameters(namespace.parameters) + "): " +
-    formatReturnTypes(namespace.returnTypes) + ";\n";
+  let returnTypesString = formatReturnTypes(namespace.returnTypes);
+  result += formatParameters(namespace.parameters).map(
+    (paramsStr) => indent(level) + "(" +  paramsStr + "): " + returnTypesString + ";\n").join("");
 
   return result + resultTail;
 }
@@ -127,8 +128,8 @@ function formatClass(namespace: DojoNamespace, level: number): string {
 
   level++;
 
-  result += indent(level) + "constructor(" + (namespace.parameters !== undefined ? formatParameters(namespace.parameters) : "") + ");\n\n";
-
+  result += formatParameters(namespace.parameters).map( (paramStr) => indent(level) + "constructor(" +  paramStr + ");\n" ).join("");
+  
   if (namespace.properties !== undefined) {
     result += formatProperties(namespace.properties, level);
   }
@@ -163,14 +164,75 @@ function formatMethods(methods: DojoMethod[], level: number): string {
 }
 
 function formatMethod(method: DojoMethod, level: number): string {
-  if (method.name === 'constructor') {
-    return formatDocs(method, level) +
-      indent(level) + method.name + "(" + formatParameters(method.parameters) + ");";
-  } else {
-    return formatDocs(method, level) +
-      indent(level) + quoteName(method.name) + "(" + formatParameters(method.parameters) + "): " +
-      formatReturnTypes(method.returnTypes) + ";\n";
+  let result = formatDocs(method, level);
+  
+  // Sometimes we have to emit a method multiple times with slightly
+  // different parameters to support Dojo's habit of sometime having
+  // optional parameters which appear before a required parameter.
+  
+  // Figure out how many optional parameters we have in weird positions.
+  let hitLastNonOptional = false;
+  let weirdOptionals = 0;
+  for (let i = method.parameters.length-1; i>=0; i--) {
+    if ( ! hitLastNonOptional) {
+      // Keep looking for the last nonoptional parameter.
+      if (method.parameters[i].usage !== "optional") {
+        hitLastNonOptional = true;
+      }
+    } else {
+      if (method.parameters[i].usage === "optional") {
+        weirdOptionals++;
+      }
+    }
   }
+  
+  let range = 1 << weirdOptionals;
+  for (let i=0; i<range; i++) {
+    let optionalCount = 0;
+    let mask = i;
+    let comma = "";
+    
+    result += indent(level) + quoteName(method.name) + "(";
+    
+    method.parameters.forEach( (parameter) => {
+      
+      if (optionalCount < weirdOptionals) {
+        // We may encounter weird optionals which need special handling.
+        if (parameter.usage === "optional") {
+          optionalCount++;
+          if ((mask & 1) === 1) {
+            // Suppress this weird optional.
+            mask = mask >> 1;
+            return;
+          }
+          mask = mask >> 1;
+        }
+        
+        // Print this optional parameter but hide its optional flag.
+        result += comma;
+        comma = ", ";
+        result += parameter.name + ": " + formatTypes(parameter.types);
+      } else {
+        
+        // Normal optional processing.
+        result += comma;
+        comma = ", ";
+        result += parameter.name;
+        if (parameter.usage === "optional") {
+          result += "?";
+        }
+        result += ":" + formatTypes(parameter.types);
+      }
+    });
+    
+    result += ")";
+    if (method.name !== 'constructor') {  
+      result += ": " + formatTypes(method.returnTypes);
+    }
+    result += ";\n";
+  }
+  
+  return result;
 }
 
 function quoteName(name: string): string {
@@ -214,12 +276,84 @@ function prefixLines(lines: string[], prefix: string): string[] {
   return lines.map( (line) => prefix + line);
 }
 
-function formatParameters(parameters: DojoParameter[]): string {
-  return parameters.map(formatParameter).join(", ");
-}
-
-function formatParameter(parameter: DojoParameter): string {
-  return parameter.name + (parameter.usage === "optional" ? "?" : "") + ": " + formatTypes(parameter.types);
+/**
+ * Formats a list of parameters
+ *
+ * If there are optional parameters in the list which appear before required
+ * parameters, then multiple overloaded parameter strings are returned.
+ *
+ * @param parameters parameters to format
+ * @return list of formatted parameter strings.
+ */
+function formatParameters(parameters: DojoParameter[]): string[] {
+  
+  if (parameters === undefined) {
+    return [""];
+  }
+  
+  let result: string[] = [];
+  
+  // Sometimes we have to emit a method multiple times with slightly
+  // different parameters to support Dojo's habit of sometime having
+  // optional parameters which appear before a required parameter.
+  
+  // Figure out how many optional parameters we have in weird positions.
+  let hitLastNonOptional = false;
+  let weirdOptionals = 0;
+  for (let i = parameters.length-1; i>=0; i--) {
+    if ( ! hitLastNonOptional) {
+      // Keep looking for the last nonoptional parameter.
+      if (parameters[i].usage !== "optional") {
+        hitLastNonOptional = true;
+      }
+    } else {
+      if (parameters[i].usage === "optional") {
+        weirdOptionals++;
+      }
+    }
+  }
+  
+  let range = 1 << weirdOptionals;
+  for (let i=0; i<range; i++) {
+    let optionalCount = 0;
+    let mask = i;
+    let comma = "";
+    let line = "";
+    
+    parameters.forEach( (parameter) => {
+      
+      if (optionalCount < weirdOptionals) {
+        // We may encounter weird optionals which need special handling.
+        if (parameter.usage === "optional") {
+          optionalCount++;
+          if ((mask & 1) === 1) {
+            // Suppress this weird optional.
+            mask = mask >> 1;
+            return;
+          }
+          mask = mask >> 1;
+        }
+        
+        // Print this optional parameter but hide its optional flag.
+        line += comma;
+        comma = ", ";
+        line += parameter.name + ": " + formatTypes(parameter.types);
+      } else {
+        
+        // Normal optional processing.
+        line += comma;
+        comma = ", ";
+        line += parameter.name;
+        if (parameter.usage === "optional") {
+          line += "?";
+        }
+        line += ":" + formatTypes(parameter.types);
+      }
+    });
+    result.push(line);
+  }
+    
+  return result;
 }
 
 function formatReturnTypes(types: string[]): string {
