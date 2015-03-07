@@ -193,7 +193,7 @@ function formatDocs(entity: DojoDocumentedEntity, level: number): string {
     result += entity.parameters.map(
       (param) => docIndent + "@param " + param.name + " " +
         (param.usage === "optional" ? "Optional. " : "") +
-        (param.summary !== undefined ? htmlToPlainLines(param.summary).join("\n" + docIndent + "          ") + "\n" : "")).join("");
+        (param.summary !== undefined ? htmlToPlainLines(param.summary).join("\n" + docIndent + "          ") + "\n" : "\n")).join("");
   }
   result += indent(level) + " */\n";
   return result;
@@ -201,7 +201,11 @@ function formatDocs(entity: DojoDocumentedEntity, level: number): string {
 
 function htmlToPlainLines(text: string): string[] {
   const parts = text.split("\n");
-  return parts.map( (t) => t.trim() ).filter( (t) => t !== "").map(stripHtml);
+  const result = parts.map( (t) => t.trim() ).filter( (t) => t !== "").map(stripHtml);
+  if (result.length !==0 && result[result.length-1] === "") {
+    result.splice(result.length-1, 1);
+  }
+  return result;
 }
 
 function stripHtml(text: string): string {
