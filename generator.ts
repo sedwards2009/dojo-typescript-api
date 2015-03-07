@@ -165,73 +165,9 @@ function formatMethods(methods: DojoMethod[], level: number): string {
 
 function formatMethod(method: DojoMethod, level: number): string {
   let result = formatDocs(method, level);
-  
-  // Sometimes we have to emit a method multiple times with slightly
-  // different parameters to support Dojo's habit of sometime having
-  // optional parameters which appear before a required parameter.
-  
-  // Figure out how many optional parameters we have in weird positions.
-  let hitLastNonOptional = false;
-  let weirdOptionals = 0;
-  for (let i = method.parameters.length-1; i>=0; i--) {
-    if ( ! hitLastNonOptional) {
-      // Keep looking for the last nonoptional parameter.
-      if (method.parameters[i].usage !== "optional") {
-        hitLastNonOptional = true;
-      }
-    } else {
-      if (method.parameters[i].usage === "optional") {
-        weirdOptionals++;
-      }
-    }
-  }
-  
-  let range = 1 << weirdOptionals;
-  for (let i=0; i<range; i++) {
-    let optionalCount = 0;
-    let mask = i;
-    let comma = "";
-    
-    result += indent(level) + quoteName(method.name) + "(";
-    
-    method.parameters.forEach( (parameter) => {
-      
-      if (optionalCount < weirdOptionals) {
-        // We may encounter weird optionals which need special handling.
-        if (parameter.usage === "optional") {
-          optionalCount++;
-          if ((mask & 1) === 1) {
-            // Suppress this weird optional.
-            mask = mask >> 1;
-            return;
-          }
-          mask = mask >> 1;
-        }
-        
-        // Print this optional parameter but hide its optional flag.
-        result += comma;
-        comma = ", ";
-        result += parameter.name + ": " + formatTypes(parameter.types);
-      } else {
-        
-        // Normal optional processing.
-        result += comma;
-        comma = ", ";
-        result += parameter.name;
-        if (parameter.usage === "optional") {
-          result += "?";
-        }
-        result += ":" + formatTypes(parameter.types);
-      }
-    });
-    
-    result += ")";
-    if (method.name !== 'constructor') {  
-      result += ": " + formatTypes(method.returnTypes);
-    }
-    result += ";\n";
-  }
-  
+  result += formatParameters(method.parameters).map(
+    (paramStr) => indent(level) + quoteName(method.name) + "(" + paramStr + ")" +
+      (method.name !== 'constructor' ? (": " + formatTypes(method.returnTypes)) : "") + ";\n").join("");
   return result;
 }
 
@@ -347,7 +283,7 @@ function formatParameters(parameters: DojoParameter[]): string[] {
         if (parameter.usage === "optional") {
           line += "?";
         }
-        line += ":" + formatTypes(parameter.types);
+        line += ": " + formatTypes(parameter.types);
       }
     });
     result.push(line);
