@@ -146,7 +146,7 @@ export function normalizeName(name: string): string {
 }
 
 function translateInterfaceName(name: string): string {
-  const underscoreList: string[] = ["string", "default"];
+  const underscoreList: string[] = ["string", "default", "number"];
   const parts = name.split("/");
   if (underscoreList.indexOf(parts[parts.length-1]) !== -1) {
     parts[parts.length-1] += "_";
@@ -447,6 +447,7 @@ export function formatType(t: string): string {
     case "Points[]":
       result = "Object[]";
       break;
+    case "Object|Anything|Nothing":
     case "Anything":
     case "Anything?":
     case "anything":
@@ -502,6 +503,7 @@ export function formatType(t: string): string {
     case "float":
     case "Integer":
     case "integer":
+    case "Interger":
     case "Int":
     case "id":
     case "number":
