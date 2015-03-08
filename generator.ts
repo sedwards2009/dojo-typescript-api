@@ -39,50 +39,117 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
   /*log("Location: " + namespace.location + "\n");*/
   const name = namespace.location;
   const parts = normalizeName(name).split(/\./g);
+  const lastPart = parts[parts.length-1];
 
+  // Types which start with __ are Dojo's (fake) way of documenting interfaces.
+  const isDojoInterface = lastPart.indexOf("__") === 0;
+  const isDojoClass = namespace.methods !== undefined && namespace.methods.some( (m) => m.name === 'constructor');
+  
+  result += "// Types for " + namespace.location + "\n";
+
+  if (isDojoInterface) {
+    result += formatModuleInterface(namespace, level);
+    
+  } else if (isDojoClass) {
+    result += formatModuleClass(namespace, level);
+        
+  } else {
+  
+    const formattedTypes = formatNamespaceTypes(namespace, level);
+    if (formattedTypes !== "") {
+      // Start nested modules and type definitions.
+      parts.forEach( (p) => {
+          result += indent(level) + (level === 0 ? "declare " : "") + "module " + p + " {\n";
+          resultTail = indent(level) + "}\n" + resultTail;
+          level++;
+        });
+      result += formattedTypes;
+      result += resultTail;
+    }
+    
+    // Output the module definition.
+    result += formatDocs(namespace, 0);
+    result += 'declare module "' + namespace.location + '" {\n';
+    result += formatNamespaceFunctions(namespace, 1);
+
+    if (namespace.type === "function") {
+      result += indent(1) + "var default_export: {\n";
+      let returnTypesString = formatReturnTypes(namespace.returnTypes);
+      result += formatParameters(namespace.parameters).map(
+        (paramsStr) => indent(2) + "(" +  paramsStr + "): " + returnTypesString + ";\n").join("");
+      result += indent(1) + "};\n";
+      result += indent(1) + "export=default_export;\n";
+    }
+
+    result += "}\n";
+    result += "\n";
+  }
+
+  return result;
+}
+
+function formatNamespaceTypes(namespace: DojoNamespace, level: number): string {
+  let result = "";
+  
+  // FIXME
+  return result;
+}
+
+function formatNamespaceFunctions(namespace: DojoNamespace, level : number): string {
+  let result = "";
+  if (namespace.methods !== undefined) {
+    namespace.methods.forEach( (method) => {
+      if (method.name.indexOf("-") !== -1) {
+        result += "// Skipping function with illegal name '" + method.name + "'\n";
+      } else {
+        result += formatDocs(method, level);
+        let returnTypesString = formatReturnTypes(method.returnTypes);
+        result += formatParameters(method.parameters).map(
+          (paramsStr) => indent(level) + "function " + method.name + "(" +  paramsStr + "): " + returnTypesString + ";\n").join("");
+        result += "\n";
+      }
+    });
+  }
+  return result;  
+}
+
+function formatModuleInterface(namespace: DojoNamespace, level: number): string {
+  let result = "";
+  let resultTail = "";
+  const name = namespace.location;
+  const parts = normalizeName(name).split(/\./g);
+  const shortName = parts[parts.length-1];
+  
   parts.slice(0, -1).forEach( (p) => {
       result += indent(level) + (level === 0 ? "declare " : "") + "module " + p + " {\n";
       resultTail = indent(level) + "}\n" + resultTail;
       level++;
     });
-
-  const lastPart = parts[parts.length-1];
-
-  // Types which start with __ are Dojo's (fake) way of documenting interfaces.
-  const isDojoInterface = lastPart.indexOf("__") === 0;
-
-  // Objects acting as namespaces and containing functions.
-  if (namespace.type === 'object' || namespace.type === 'instance' || isDojoInterface) {
-    result += formatNamespaceObject(namespace, level);
-
-  } else if (namespace.type === 'function') {
-    result += formatFunction(namespace, level);
-
-    if (namespace.methods !== undefined && namespace.methods.some( (m) => m.name === 'constructor' )) {
-      result += formatNamespaceObject(namespace, level);
-    }
-  } else if (namespace.type === 'constructor' && namespace.classlike) {
-    // Class
-    result += formatClass(namespace, level);
-  }
-
-  const interfaceName = translateInterfaceName(namespace.location);
-  resultTail += `declare module "${namespace.location}" {
-  var exp: ${interfaceName};
-  export = exp;
-}
-`;
-  return result + resultTail;
+    
+  result += formatInterface(namespace, level);
+  
+  result += resultTail;
+  
+  result += formatDocs(namespace, 0);
+  result += 'declare module "' + namespace.location + '" {\n';
+  result += formatInterface(namespace, 1);
+  result += indent(1) + "export=" + shortName + ";\n";
+  result += "}\n";
+  result += "\n";
+    
+  return result;
 }
 
-function formatNamespaceObject(namespace: DojoNamespace, level: number): string {
+function formatInterface(namespace: DojoNamespace, level: number): string {
   let result = "";
   let resultTail = "";
   const name = namespace.location;
   const parts = normalizeName(name).split(/\./g);
-
-  result += indent(level) + "interface " + translateInterfaceName(parts[parts.length-1]) + " {\n";
-  resultTail = indent(level) + "}\n" + resultTail;
+  const shortName = parts[parts.length-1];
+  
+  result += indent(level) + "interface " + translateInterfaceName(shortName) + " {\n";
+  resultTail += "\n";  
+  resultTail = indent(level) + "}" + resultTail;
 
   level++;
   if (namespace.properties !== undefined) {
@@ -92,7 +159,36 @@ function formatNamespaceObject(namespace: DojoNamespace, level: number): string 
   if (namespace.methods !== undefined) {
     result += formatMethods(namespace.methods, level);
   }
-  return result + resultTail;
+  result += resultTail;
+
+  return result;
+}
+
+function formatModuleClass(namespace: DojoNamespace, level: number): string {
+  let result = "";
+  let resultTail = "";
+  const name = namespace.location;
+  const parts = normalizeName(name).split(/\./g);
+  const shortName = parts[parts.length-1];
+  
+  parts.slice(0, -1).forEach( (p) => {
+      result += indent(level) + (level === 0 ? "declare " : "") + "module " + p + " {\n";
+      resultTail = indent(level) + "}\n" + resultTail;
+      level++;
+    });
+    
+  result += formatClass(namespace, level);
+  
+  result += resultTail;
+  
+  result += formatDocs(namespace, 0);
+  result += 'declare module "' + namespace.location + '" {\n';
+  result += formatClass(namespace, 1);
+  result += indent(1) + "export=" + shortName + ";\n";
+  result += "}\n";
+  result += "\n";
+    
+  return result;
 }
 
 function formatFunction(namespace: DojoNamespace, level: number): string {
