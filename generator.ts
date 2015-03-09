@@ -32,6 +32,19 @@ export function formatAPI(details: DojoDetailsInterface): string {
   return result;
 }
 
+const FORCED_INTERFACE_REGEX = [
+  /^dojo\/store\/api\//,
+  /^dojo\/data\/api\//,
+];
+
+function isDojoInterface(namespace: DojoNamespace): boolean {
+  // Types which start with __ are Dojo's (fake) way of documenting interfaces.
+  const name = namespace.location;
+  const parts = normalizeName(name).split(/\./g);
+  const lastPart = parts[parts.length-1];
+  return lastPart.indexOf("__") === 0 || FORCED_INTERFACE_REGEX.some( (re) => re.test(name) );
+}
+
 function formatModule(namespace: DojoNamespace, level: number=0): string {
   let result = "";
   let resultTail = "";
@@ -41,13 +54,11 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
   const parts = normalizeName(name).split(/\./g);
   const lastPart = parts[parts.length-1];
 
-  // Types which start with __ are Dojo's (fake) way of documenting interfaces.
-  const isDojoInterface = lastPart.indexOf("__") === 0;
   const isDojoClass = namespace.methods !== undefined && namespace.methods.some( (m) => m.name === 'constructor');
   
   result += "// Types for " + namespace.location + "\n";
 
-  if (isDojoInterface) {
+  if (isDojoInterface(namespace)) {
     result += formatModuleInterface(namespace, level);
     
   } else if (isDojoClass) {
