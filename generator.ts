@@ -604,6 +604,7 @@ export function formatType(t: string): string {
     case "(in)string":
     case "name:":
     case "summary:":
+    case "URI":
       result = "string";
       break;
     case "String[]":
@@ -641,6 +642,7 @@ export function formatType(t: string): string {
       break;
     case "Array":
     case "array":
+    case "dojo/_base/array":
       result = "any[]";
       break;
     case "Event":
@@ -740,6 +742,7 @@ export function formatType(t: string): string {
     case "Mixed":
     case "instance":
     case "jsx3.xml.Entity":
+    case "Hash":
       result = "any";
       break;
     case "Anything[]":
@@ -777,6 +780,9 @@ export function formatType(t: string): string {
       break;
     case "data-store":
       result = "dojo/data/api/Read";
+      break;
+    case "dojo/query":
+      result = "Function";
       break;
     default:
       break;
