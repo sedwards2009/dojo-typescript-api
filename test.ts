@@ -9,6 +9,7 @@ import path = require('path');
 import child_process = require('child_process');
 import shelljs = require('shelljs');
 
+import generate_all = require('./generate_all');
 import generator = require('./generator');
 import DojoDetailsInterface = require('./DojoDetailsInterface');
 
@@ -100,11 +101,7 @@ export function testNormalizeDash(test: nodeunit.Test): void {
 }
 
 export function testDojoModule(test: nodeunit.Test): void {
-  const moduleList: string[] = [];
-  for (let key in details) {
-    if (key.indexOf("dojo/") === 0) {
-      moduleList.push(key);
-    }
-  }
-  compileTest(test, moduleList);
+  generate_all.main();
+  const headerText = fs.readFileSync("output/dojo.d.ts", "utf8");
+  tsCompile(headerText, "");
 }

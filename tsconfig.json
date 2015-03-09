@@ -13,10 +13,12 @@
         "!./node_modules/**/*.ts",
         "!./target/**/*.ts",
         "!./typings/**/*.ts",
-        "!./output/**/*.ts"
+        "!./output/**/*.ts",
+        "!./hand_written_extra/**/*.ts"
     ],
     "files": [
         "./DojoDetailsInterface.ts",
+        "./generate_all.ts",
         "./generator.ts",
         "./main.ts",
         "./test.ts"
