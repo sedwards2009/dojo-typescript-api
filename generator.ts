@@ -45,6 +45,19 @@ function isDojoInterface(namespace: DojoNamespace): boolean {
   return lastPart.indexOf("__") === 0 || FORCED_INTERFACE_REGEX.some( (re) => re.test(name) );
 }
 
+const FORCED_CLASS_REGEX = [
+  /^dojo\/NodeList$/
+];
+
+function isDojoClass(namespace: DojoNamespace): boolean {
+  // return namespace.methods !== undefined && namespace.methods.some( (m) => m.name === 'constructor');
+  const name = namespace.location;
+  const forced = FORCED_CLASS_REGEX.some( (re) =>re.test(name) );
+  return namespace.classlike === true || (namespace.type === 'function'
+    && (namespace.returnTypes === undefined || namespace.returnTypes.length===0)
+    && namespace.methods !== undefined && namespace.methods.length !== 0) || forced;
+}
+
 function formatModule(namespace: DojoNamespace, level: number=0): string {
   let result = "";
   let resultTail = "";
@@ -54,14 +67,12 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
   const parts = normalizeName(name).split(/\./g);
   const lastPart = parts[parts.length-1];
 
-  const isDojoClass = namespace.methods !== undefined && namespace.methods.some( (m) => m.name === 'constructor');
-  
   result += "// Types for " + namespace.location + "\n";
 
   if (isDojoInterface(namespace)) {
     result += formatModuleInterface(namespace, level);
     
-  } else if (isDojoClass) {
+  } else if (isDojoClass(namespace)) {
     result += formatModuleClass(namespace, level);
         
   } else {
