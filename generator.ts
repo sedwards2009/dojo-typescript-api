@@ -804,6 +804,15 @@ export function formatType(t: string): string {
     case "__RegexpOptions":
       result = "dojo/number.__RegexpOptions";
       break;
+    case "dojox/dtl/__StringArgs":
+      result = "string";
+      break;
+    case "dojox/dtl/__ObjectArgs":
+      result = "Object";
+      break;
+    case "Array|dojo/promise/Promise":
+      result = "any[]|dojo/promise/Promise";
+      break;
     default:
       break;
   }
