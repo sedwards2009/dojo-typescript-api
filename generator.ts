@@ -812,6 +812,9 @@ export function formatType(t: string): string {
     case "Array|dojo/promise/Promise":
       result = "any[]|dojo/promise/Promise";
       break;
+    case "dojo/store/api/Store.AddOptions":
+      result = "any";
+      break;
     default:
       break;
   }
