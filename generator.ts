@@ -35,6 +35,7 @@ export function formatAPI(details: DojoDetailsInterface): string {
 const FORCED_INTERFACE_REGEX = [
   /^dojo\/store\/api\//,
   /^dojo\/data\/api\//,
+  /^dojo\/number\.__/
 ];
 
 function isDojoInterface(namespace: DojoNamespace): boolean {
@@ -558,6 +559,7 @@ export function formatType(t: string): string {
     case "Animation":
     case "Arguments":
     case "data item":
+    case "Stream":
       result = "Object";
       break;
     case "Object...":
@@ -783,6 +785,24 @@ export function formatType(t: string): string {
       break;
     case "dojo/query":
       result = "Function";
+      break;
+    case "__FormatAbsoluteOptions":
+      result = "dojo/number.__FormatAbsoluteOptions";
+      break;
+    case "__FormatOptions":
+      result = "dojo/number.__FormatOptions";
+      break;
+    case "__IntegerRegexpFlags":
+      result = "dojo/number.__IntegerRegexpFlags";
+      break;
+    case "__ParseOptions":
+      result = "dojo/number.__ParseOptions";
+      break;
+    case "__RealNumberRegexpFlags":
+      result = "dojo/number.__RealNumberRegexpFlags";
+      break;
+    case "__RegexpOptions":
+      result = "dojo/number.__RegexpOptions";
       break;
     default:
       break;
