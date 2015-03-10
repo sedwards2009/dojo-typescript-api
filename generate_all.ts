@@ -38,7 +38,7 @@ export function main() {
       console.log("Processing " + prefix);
       const cleanDetails: DojoDetailsInterface.DojoDetailsInterface = {};
       for(let key in details) {
-        if (key.indexOf(prefix) === 0 && (key.length === prefix.length || key[prefix.length] === '/')) {
+        if (key.indexOf(prefix) === 0 && key !== 'dojo/fx/Toggler' && (key.length === prefix.length || key[prefix.length] === '/')) {
           cleanDetails[key] = details[key];
         }
       }
