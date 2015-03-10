@@ -38,12 +38,11 @@ const FORCED_INTERFACE_REGEX = [
   /^dojo\/number\.__/
 ];
 
-function isDojoInterface(namespace: DojoNamespace): boolean {
+function isDojoInterface(from: string, name: string = null): boolean {
   // Types which start with __ are Dojo's (fake) way of documenting interfaces.
-  const name = namespace.location;
-  const parts = normalizeName(name).split(/\./g);
+  const parts = normalizeName(from).split(/\./g);
   const lastPart = parts[parts.length-1];
-  return lastPart.indexOf("__") === 0 || FORCED_INTERFACE_REGEX.some( (re) => re.test(name) );
+  return lastPart.indexOf("__") === 0 || FORCED_INTERFACE_REGEX.some( (re) => re.test(from) ) || (name !== null && name.indexOf("__")===0);
 }
 
 const FORCED_CLASS_REGEX = [
@@ -70,7 +69,7 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
 
   result += "// Types for " + namespace.location + "\n";
 
-  if (isDojoInterface(namespace)) {
+  if (isDojoInterface(namespace.location)) {
     result += formatModuleInterface(namespace, level);
     
   } else if (isDojoClass(namespace)) {
@@ -279,7 +278,7 @@ function formatProperties(properties: DojoProperty[], level: number): string {
 }
 
 function formatMethods(methods: DojoMethod[], level: number): string {
-  return methods.map( (method) => formatMethod(method, level)).join("\n");
+  return methods.filter( (m) => !isDojoInterface(m.from, m.name)  ).map( (method) => formatMethod(method, level)).join("\n");
 }
 
 function formatMethod(method: DojoMethod, level: number): string {
