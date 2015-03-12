@@ -14,10 +14,11 @@ export interface DojoProperty {
 
 export interface DojoDocumentedEntity {
   parameters?: DojoParameter[];
+  returnDescription?: string;
   returnTypes: string[];
   summary: string;
-  description: string;
-  examples: string;
+  description?: string;
+  examples?: string;
 }
 
 export interface DojoMethod extends DojoDocumentedEntity {

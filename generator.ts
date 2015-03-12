@@ -1,7 +1,7 @@
 /// <reference path="typings/tsd.d.ts" />
 "use strict";
 import stream = require('stream');
-
+import _ = require('lodash');
 import DojoDetailsInterface = require('./DojoDetailsInterface');
 
 type DojoDetailsInterface = DojoDetailsInterface.DojoDetailsInterface;
@@ -241,7 +241,11 @@ function formatClass(namespace: DojoNamespace, level: number): string {
 
   result += indent(level) + "class " + translateInterfaceName(parts[parts.length-1]);
   if (namespace.superclass !== undefined && namespace.superclass !== "") {
-    result += " implements " + formatType(namespace.superclass);
+    if (isDojoInterface(namespace.superclass)) {
+      result += " implements " + formatType(namespace.superclass);
+    } else {
+      result += " extends " + formatType(namespace.superclass);
+    }
   }
   result += " {\n";
   resultTail = indent(level) + "}\n" + resultTail;
@@ -451,8 +455,21 @@ function formatTypes(types: string[]): string {
  * @return the corrected namespace object. The original namespace object is
  *              not modified, a copy may be returned.
  */
-function patchModuleClass(namespace: DojoNamespace): DojoNamespace {
-  return namespace;
+function patchModuleClass(originalNamespace: DojoNamespace): DojoNamespace {
+  const name = originalNamespace.location;
+  let namespace: DojoNamespace;
+  
+  switch(name) {
+    case "dojo/dnd/Container":
+      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      // Remove the pesky insertNodes() method is redined in subclasses with different and incompatible args.
+      namespace.methods = namespace.methods.filter( (m) => m.name !== "insertNodes");
+      return namespace;
+      break;
+      
+    default:
+      return originalNamespace;
+  }
 }
 
 export function formatType(t: string): string {

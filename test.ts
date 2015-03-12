@@ -104,4 +104,5 @@ export function testDojoModule(test: nodeunit.Test): void {
   generate_all.main();
   const headerText = fs.readFileSync("output/dojo.d.ts", "utf8");
   tsCompile(headerText, "");
+  test.done();
 }
