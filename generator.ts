@@ -186,7 +186,9 @@ function formatInterface(namespace: DojoNamespace, level: number): string {
   return result;
 }
 
-function formatModuleClass(namespace: DojoNamespace, level: number): string {
+function formatModuleClass(originalNamespace: DojoNamespace, level: number): string {
+  const namespace = patchModuleClass(originalNamespace);
+  
   let result = "";
   let resultTail = "";
   const name = namespace.location;
@@ -438,6 +440,19 @@ function formatTypes(types: string[]): string {
       return dedupedTypes.reduce( (prev, t) => prev + "|"+ t);
     }
   }
+}
+
+/**
+ * Patches namespace objects
+ *
+ * Creates new patched namespace object. This is one place where manual
+ * patches and fixes to the Dojo API can be done.
+ *
+ * @return the corrected namespace object. The original namespace object is
+ *              not modified, a copy may be returned.
+ */
+function patchModuleClass(namespace: DojoNamespace): DojoNamespace {
+  return namespace;
 }
 
 export function formatType(t: string): string {
