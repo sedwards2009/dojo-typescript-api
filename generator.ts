@@ -24,6 +24,10 @@ function indent(level: number): string {
   return result;
 }
 
+function logRef(msg: string, namespace: DojoNamespace): void {
+  log(`    ${msg} [${namespace.location}](http://dojotoolkit.org/api/?qs=1.10/${namespace.location})`); 
+}
+
 export function formatAPI(details: DojoDetailsInterface): string {
   let result = "";
   for (let key in details) {
@@ -70,13 +74,15 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
   result += "// Types for " + namespace.location + "\n";
 
   if (isDojoInterface(namespace.location)) {
+    logRef("interface", namespace);
     result += formatModuleInterface(namespace, level);
     
   } else if (isDojoClass(namespace)) {
+    logRef("class", namespace);
     result += formatModuleClass(namespace, level);
         
   } else {
-  
+    logRef("namespace", namespace);
     const formattedTypes = formatNamespaceTypes(namespace, level);
     if (formattedTypes !== "") {
       // Start nested modules and type definitions.
