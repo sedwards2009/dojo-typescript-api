@@ -45,6 +45,9 @@ const FORCED_INTERFACE_REGEX = [
 
 function isDojoInterface(from: string, name: string = null): boolean {
   // Types which start with __ are Dojo's (fake) way of documenting interfaces.
+  if (isForcedNamespace(from)) {
+    return false;
+  }
   const parts = normalizeName(from).split(/\./g);
   const lastPart = parts[parts.length-1];
   return lastPart.indexOf("__") === 0 || FORCED_INTERFACE_REGEX.some( (re) => re.test(from) ) || (name !== null && name.indexOf("__")===0);
@@ -54,9 +57,20 @@ const FORCED_CLASS_REGEX = [
   /^dojo\/NodeList$/
 ];
 
+const FORCED_NAMESPACE_REGEX = [
+  /dojo\/ready$/
+];
+
+function isForcedNamespace(from: string): boolean {
+  return FORCED_NAMESPACE_REGEX.some( (re) => re.test(from) );
+}
+
 function isDojoClass(namespace: DojoNamespace): boolean {
   // return namespace.methods !== undefined && namespace.methods.some( (m) => m.name === 'constructor');
   const name = namespace.location;
+  if (isForcedNamespace(namespace.location)) {
+    return false;
+  }
   const forced = FORCED_CLASS_REGEX.some( (re) =>re.test(name) );
   return namespace.classlike === true || (namespace.type === 'function'
     && (namespace.returnTypes === undefined || namespace.returnTypes.length===0)
