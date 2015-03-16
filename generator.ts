@@ -39,7 +39,8 @@ export function formatAPI(details: DojoDetailsInterface): string {
 const FORCED_INTERFACE_REGEX = [
   /^dojo\/store\/api\//,
   /^dojo\/data\/api\//,
-  /^dojo\/number\.__/
+  /^dojo\/number\.__/,
+  /^Error$/
 ];
 
 function isDojoInterface(from: string, name: string = null): boolean {
@@ -470,6 +471,32 @@ function patchModuleClass(originalNamespace: DojoNamespace): DojoNamespace {
       namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
       // Remove the pesky insertNodes() method is redined in subclasses with different and incompatible args.
       namespace.methods = namespace.methods.filter( (m) => m.name !== "insertNodes");
+      return namespace;
+      break;
+      
+    case "dojo/errors/CancelError":
+    case "dojo/errors/RequestError":
+    case "dojo/errors/RequestTimeoutError":
+      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace.superclass = "Error";
+      namespace.properties = [
+        {
+          "name": "name",
+          "scope": "normal",
+          "types": [
+                 "string"
+          ],
+          "from": ""
+        },
+        {
+          "name": "message",
+          "scope": "normal",
+          "types": [
+                 "string"
+          ],
+          "from": ""
+        }];
+      
       return namespace;
       break;
       
