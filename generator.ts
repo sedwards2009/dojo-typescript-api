@@ -31,7 +31,10 @@ function logRef(msg: string, namespace: DojoNamespace): void {
 export function formatAPI(details: DojoDetailsInterface): string {
   let result = "";
   for (let key in details) {
-    result += formatModule(details[key]);
+    const patched = patchModuleNamespace(details[key]);
+    if (patched !== null) {
+      result += formatModule(patched);
+    }
   }
   return result;
 }
@@ -207,9 +210,7 @@ function formatInterface(namespace: DojoNamespace, level: number): string {
   return result;
 }
 
-function formatModuleClass(originalNamespace: DojoNamespace, level: number): string {
-  const namespace = patchModuleClass(originalNamespace);
-  
+function formatModuleClass(namespace: DojoNamespace, level: number): string {
   let result = "";
   let resultTail = "";
   const name = namespace.location;
@@ -476,7 +477,7 @@ function formatTypes(types: string[]): string {
  * @return the corrected namespace object. The original namespace object is
  *              not modified, a copy may be returned.
  */
-function patchModuleClass(originalNamespace: DojoNamespace): DojoNamespace {
+function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
   const name = originalNamespace.location;
   let namespace: DojoNamespace;
   
@@ -513,6 +514,21 @@ function patchModuleClass(originalNamespace: DojoNamespace): DojoNamespace {
       
       return namespace;
       break;
+      
+    // Modules which are in error or should just be ignored.  
+    case "dojo/_base/url.scheme":
+    case "dojo/_base/url.authority":
+    case "dojo/_base/url.query":
+    case "dojo/_base/url.fragment":
+    case "dojo/_base/url.user":
+    case "dojo/_base/url.password":
+    case "dojo/_base/url.port":
+    case "dojo/NodeList._nodeDataCache":
+    case "dojo/_firebug/firebug":
+    case "dojo/i18n.cache":
+    case "dojo/dnd/common._empty":
+    case "dojo/gears.available":
+      return null;
       
     default:
       return originalNamespace;
