@@ -87,3 +87,8 @@ declare module dojo {
 declare module "dojo/_base/fx" {
   // FIXME Animation should appear here.
 }
+
+declare module "dojo/router" {
+  var _default: dojo.router.RouterBase;
+  export=_default;
+}

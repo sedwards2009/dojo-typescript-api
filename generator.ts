@@ -536,6 +536,7 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
     case "dojo/i18n.cache":
     case "dojo/dnd/common._empty":
     case "dojo/gears.available":
+    case "dojo/router":
       return null;
       
     default:
