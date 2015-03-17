@@ -61,7 +61,15 @@ const FORCED_CLASS_REGEX = [
 ];
 
 const FORCED_NAMESPACE_REGEX = [
-  /dojo\/ready$/
+  /^dojo\/ready$/,
+  /^dojo\/domReady$/,
+  /^dojo\/debounce$/,
+  /^dojo\/hccss$/,
+  /^dojo\/on\/asyncEventListener$/,
+  /^dojo\/on\/debounce$/,
+  /^dojo\/on\/throttle$/,
+  /^dojo\/throttle$/,
+  /^dojo\/promise\/instrumentation$/
 ];
 
 function isForcedNamespace(from: string): boolean {
