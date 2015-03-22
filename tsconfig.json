@@ -21,6 +21,12 @@
         "./generate_all.ts",
         "./generator.ts",
         "./main.ts",
-        "./test.ts"
+        "./test.ts",
+        "./test_files/date_locale.ts",
+        "./test_files/date_stamp.ts",
+        "./test_files/dojo__base_lang.ts",
+        "./test_files/dojo_store_datastore.ts",
+        "./test_files/dojo_store_memory.ts",
+        "./test_files/test_harness.d.ts"
     ]
 }
