@@ -92,3 +92,11 @@ declare module "dojo/router" {
   var _default: dojo.router.RouterBase;
   export=_default;
 }
+
+declare module "dojo/date/locale" {
+  function _getWeekOfYear(dateObject: Date): any;
+}
+
+declare module "dojo/date/stamp" {
+  function fromISOString(formattedString: string, defaultTime?: Date): any;
+}

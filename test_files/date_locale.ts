@@ -95,8 +95,8 @@ import Deferred = require('dojo/Deferred');
 					options = {datePattern: 'hh \'o\'\'clock\' a', selector: 'date', locale: 'en'};
 					assert.equal(locale.format(date, options), '12 o\'clock AM');
 
-					options = {datePattern: 'dd/MM/yyyy', timePattern: 'hh:mma', locale: 'en', am: 'am', pm: 'pm'};
-					assert.equal(locale.format(date, options), '11/08/2006, 12:55am');
+					var options2 = {datePattern: 'dd/MM/yyyy', timePattern: 'hh:mma', locale: 'en', am: 'am', pm: 'pm'};
+					assert.equal(locale.format(date, options2), '11/08/2006, 12:55am');
 				}
 			};
 		}()),
@@ -127,11 +127,11 @@ import Deferred = require('dojo/Deferred');
 					},
 
 					'upper case PM in time': function () {
-						assertDates(locale.parse('08/11/06, 12:30 PM', {formatLength: 'short', locale: 'en'}, 'PM'), AUG_11_2006_12_30_PM);
+						assertDates(locale.parse('08/11/06, 12:30 PM', {formatLength: 'short', locale: 'en'} /*, 'PM' */ ), AUG_11_2006_12_30_PM);
 					},
 
 					'lower case pm in time': function () {
-						assertDates(locale.parse('08/11/06, 12:30 pm', {formatLength: 'short', locale: 'en'}, 'pm'), AUG_11_2006_12_30_PM);
+						assertDates(locale.parse('08/11/06, 12:30 pm', {formatLength: 'short', locale: 'en'} /*, 'pm' */ ), AUG_11_2006_12_30_PM);
 					},
 
 					'lower case pm fails in strict mode': function () {
@@ -143,7 +143,7 @@ import Deferred = require('dojo/Deferred');
 					},
 
 					'upper case AM in time': function () {
-						assertDates(locale.parse('08/11/06, 12:30 AM', {formatLength: 'short', locale: 'en'}, 'AM'), AUG_11_2006_12_30_AM);
+						assertDates(locale.parse('08/11/06, 12:30 AM', {formatLength: 'short', locale: 'en'} /*, 'AM' */ ), AUG_11_2006_12_30_AM);
 					}
 				},
 
