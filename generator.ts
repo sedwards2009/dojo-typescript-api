@@ -3,6 +3,7 @@
 import stream = require('stream');
 import _ = require('lodash');
 import DojoDetailsInterface = require('./DojoDetailsInterface');
+import he = require('he');
 
 type DojoDetailsInterface = DojoDetailsInterface.DojoDetailsInterface;
 type DojoNamespace = DojoDetailsInterface.DojoNamespace;
@@ -355,7 +356,7 @@ function formatDocs(entity: DojoDocumentedEntity, level: number): string {
 }
 
 function htmlToPlainLines(text: string): string[] {
-  const parts = text.split("\n");
+  const parts = he.decode(text).split("\n");
   const result = parts.map( (t) => t.trim() ).filter( (t) => t !== "").map(stripHtml);
   if (result.length !==0 && result[result.length-1] === "") {
     result.splice(result.length-1, 1);
