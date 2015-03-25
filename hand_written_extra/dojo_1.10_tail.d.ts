@@ -100,3 +100,27 @@ declare module "dojo/date/locale" {
 declare module "dojo/date/stamp" {
   function fromISOString(formattedString: string, defaultTime?: Date): any;
 }
+
+declare module "dojo/_base/lang" {
+  function mixin(dest?: Object, ...sources: Object[]): Object;
+  function partial(method: Function|string, ...params: any[]): Function;
+  function hitch(scope: Object, method: Function|string[], ...params: any[]): Function;
+  function delegate(obj: Object, props: Object): any;
+}
+
+declare module dojo {
+  module store {
+    interface _MemoryOptions {
+      data: any[] | { items: any[]; identifier: string; };
+      idProperty?: string;
+      index?: Object;
+    }
+  }
+}
+declare module "dojo/store/Memory" {
+  interface _MemoryOptions {
+    data: any[] | { items: any[]; identifier: string; };
+    idProperty?: string;
+    index?: Object;
+  }
+}

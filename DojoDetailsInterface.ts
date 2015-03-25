@@ -10,6 +10,7 @@ export interface DojoProperty {
   scope: string;
   types: string[];
   from: string;
+  usage?: string;
 }
 
 export interface DojoDocumentedEntity {

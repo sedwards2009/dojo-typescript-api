@@ -76,3 +76,8 @@ export function testCompileDojo_BaseLang(test: nodeunit.Test): void {
   test.ok( testCompile("test_files/dojo__base_lang.ts") );
   test.done();
 }
+
+export function testCompileDojoStoreMemory(test: nodeunit.Test): void {
+  test.ok( testCompile("test_files/dojo_store_memory.ts") );
+  test.done();
+}

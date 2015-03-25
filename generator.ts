@@ -310,7 +310,8 @@ function translateInterfaceName(name: string): string {
 }
 
 function formatProperties(properties: DojoProperty[], level: number): string {
-  return properties.map( (prop) => indent(level) + prop.name + ": " + formatTypes(prop.types) + ";\n\n").join("");
+  return properties.map( (prop) => indent(level) + prop.name + (prop.usage === "optional" ? "?" : "") + ": " +
+    formatTypes(prop.types) + ";\n\n").join("");
 }
 
 function formatMethods(methods: DojoMethod[], level: number): string {
@@ -523,6 +524,33 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       return namespace;
       break;
       
+    case "dojo/store/Memory":
+      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace.parameters[0].types[0] = "dojo.store._MemoryOptions";
+      return namespace;
+      break;
+      
+    case "dojo/store/api/Store.QueryOptions":
+      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace.properties.forEach( (p) => {
+        p.usage = "optional";
+        if (p.name === "sort") {
+          p.types.push("function");
+        }
+      });
+      return namespace;
+      break;
+      
+    case "dojo/store/api/Store.SortInformation":
+      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace.properties.forEach( (p) => {
+        if (p.name === "descending") {
+          p.usage = "optional";
+        }
+      });
+      return namespace;
+      break;
+
     // Modules which are in error or should just be ignored.  
     case "dojo/_base/url.scheme":
     case "dojo/_base/url.authority":
