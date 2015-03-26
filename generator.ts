@@ -489,20 +489,28 @@ function formatTypes(types: string[]): string {
  */
 function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
   const name = originalNamespace.location;
-  let namespace: DojoNamespace;
+  let namespace: DojoNamespace = originalNamespace;
+  
+  if (name.indexOf("dijit/") === 0) {
+    if (containsProperty(namespace, "aria-label") || containsProperty(namespace, "accept-charset")) {
+      namespace = deleteProperties(namespace, ["aria-label", "accept-charset"]);
+    }
+    if (containsMethod(namespace, "|")) {
+      namespace = deleteMethods(namespace, ["|"]);
+    }
+  }
   
   switch(name) {
     case "dojo/dnd/Container":
-      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
       // Remove the pesky insertNodes() method is redined in subclasses with different and incompatible args.
       namespace.methods = namespace.methods.filter( (m) => m.name !== "insertNodes");
-      return namespace;
       break;
       
     case "dojo/errors/CancelError":
     case "dojo/errors/RequestError":
     case "dojo/errors/RequestTimeoutError":
-      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.superclass = "Error";
       namespace.properties = [
         {
@@ -522,34 +530,30 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
           "from": ""
         }];
       
-      return namespace;
       break;
       
     case "dojo/store/Memory":
-      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.parameters[0].types[0] = "dojo.store._MemoryOptions";
-      return namespace;
       break;
       
     case "dojo/store/api/Store.QueryOptions":
-      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.properties.forEach( (p) => {
         p.usage = "optional";
         if (p.name === "sort") {
           p.types.push("function");
         }
       });
-      return namespace;
       break;
       
     case "dojo/store/api/Store.SortInformation":
-      namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.properties.forEach( (p) => {
         if (p.name === "descending") {
           p.usage = "optional";
         }
       });
-      return namespace;
       break;
 
     // Modules which are in error or should just be ignored.  
@@ -568,10 +572,48 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
     case "dojo/router":
       return null;
       
+    case "dijit/_editor/_Plugin.registry":
+      namespace = deleteMethods(namespace, ["delete"]);
+      break;
+      
     default:
-      return originalNamespace;
+      break;
   }
+  return namespace;
 }
+
+function containsProperty(namespace: DojoNamespace, propertyName: string): boolean {
+  if (namespace.properties === undefined) {
+    return false;
+  }
+  return namespace.properties.some( (p) => p.name === propertyName );
+}
+
+function containsMethod(namespace: DojoNamespace, methodName: string): boolean {
+  if (namespace.methods === undefined) {
+    return false;
+  }
+  return namespace.methods.some( (m) => m.name === methodName );
+}
+
+function deleteProperties(originalNamespace: DojoNamespace, propertyNames: string[]): DojoNamespace {
+  if (originalNamespace.properties === undefined) {
+    return originalNamespace;
+  }
+  const namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+  namespace.properties = namespace.properties.filter( (p) => propertyNames.indexOf(p.name) === -1);
+  return namespace;
+}
+
+function deleteMethods(originalNamespace: DojoNamespace, methodNames: string[]): DojoNamespace {
+  if (originalNamespace.methods === undefined) {
+    return originalNamespace;
+  }
+  const namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+  namespace.methods = namespace.methods.filter( (m) => methodNames.indexOf(m.name) === -1);
+  return namespace;
+}
+
 
 export function formatType(t: string): string {
   // This mapping below has been happily taken from
@@ -745,6 +787,7 @@ export function formatType(t: string): string {
     case "String...":
     case "word[]":
     case "Return an array of property names":
+    case "String[]?":
       result = "string[]";
       break;
     case "Number":
@@ -786,6 +829,7 @@ export function formatType(t: string): string {
     case "DocumentElement":
     case "DocumentNode":
     case "MDocumentElement":
+    case "Document?":
       result = "HTMLDocument";
       break;
     case "Window":
@@ -828,6 +872,7 @@ export function formatType(t: string): string {
       break;
     case "Widget":
     case "_Widget":
+    case "dijit/_WidgetBase?":
       result = "dijit/_WidgetBase";
       break;
     case "Widget[]":
@@ -948,6 +993,14 @@ export function formatType(t: string): string {
     case "dojo/store/api/Store.AddOptions":
       result = "any";
       break;
+    case "Items or ids":
+      return "Item[]|string[]|number[]";
+      break;
+    case "Item or id":
+      return "Item|string|number";
+      break;
+    case "String or String[]":
+      return "string|string[]";
     default:
       break;
   }
