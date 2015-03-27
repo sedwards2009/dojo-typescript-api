@@ -238,8 +238,10 @@ function formatModuleClass(namespace: DojoNamespace, level: number): string {
   
   result += formatDocs(namespace, 0);
   result += 'declare module "' + namespace.location + '" {\n';
-  result += formatClass(namespace, 1);
-  result += indent(1) + "export=" + shortName + ";\n";
+
+  result += indent(1) + "var _module_class_: typeof " + normalizeName(name) +";\n";
+  result += indent(1) + "export=_module_class_;\n";
+  
   result += "}\n";
   result += "\n";
     
