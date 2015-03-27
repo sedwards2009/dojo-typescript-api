@@ -232,11 +232,11 @@ function formatModuleClass(namespace: DojoNamespace, level: number): string {
       level++;
     });
     
+  result += formatDocs(namespace, level);
   result += formatClass(namespace, level);
   
   result += resultTail;
   
-  result += formatDocs(namespace, 0);
   result += 'declare module "' + namespace.location + '" {\n';
 
   result += indent(1) + "var _module_class_: typeof " + normalizeName(name) +";\n";
