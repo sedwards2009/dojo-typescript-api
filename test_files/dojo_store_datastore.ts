@@ -1,6 +1,8 @@
 /// <reference path="./test_harness.d.ts" />
 /// <reference path="../output/dojo.d.ts" />
+/// <reference path="../output/doh.d.ts" />
 
+import doh = require("doh/main");
 import DataStore = require("dojo/store/DataStore");
 import ItemFileReadStore = require("dojo/data/ItemFileReadStore");
 import ItemFileWriteStore = require("dojo/data/ItemFileWriteStore");

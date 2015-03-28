@@ -8,12 +8,3 @@ declare var assert: {
 };
 
 declare function registerSuite(x: any): void;
-
-
-
-declare var doh: {
-  register(...a: any[]): any;
-  Deferred: {
-    new(): any;
-  };
-};

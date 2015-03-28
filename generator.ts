@@ -502,6 +502,10 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
     }
   }
   
+  if (name === "doh/main") {
+    namespace = deleteMethods(namespace, ["Deferred"]);
+  }
+  
   switch(name) {
     case "dojo/dnd/Container":
       namespace = <DojoNamespace> _.cloneDeep(namespace);

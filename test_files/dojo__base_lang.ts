@@ -1,6 +1,8 @@
 /// <reference path="./test_harness.d.ts" />
 /// <reference path="../output/dojo.d.ts" />
+/// <reference path="../output/doh.d.ts" />
 
+import doh = require('doh/main');
 import array = require('dojo/_base/array');
 import lang = require("dojo/_base/lang");
 import kernel = require("dojo/_base/kernel");

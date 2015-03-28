@@ -1,6 +1,8 @@
 /// <reference path="./test_harness.d.ts" />
 /// <reference path="../output/dojo.d.ts" />
+/// <reference path="../output/doh.d.ts" />
 
+import doh = require("doh/main");
 import Memory = require("dojo/store/Memory");
 
 	var store = new Memory({
