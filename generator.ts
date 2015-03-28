@@ -187,8 +187,8 @@ function formatModuleInterface(namespace: DojoNamespace, level: number): string 
   
   result += formatDocs(namespace, 0);
   result += 'declare module "' + namespace.location + '" {\n';
-  result += formatInterface(namespace, 1);
-  result += indent(1) + "export=" + shortName + ";\n";
+  result += indent(1) + "interface " + translateInterfaceName(shortName) + " extends "+normalizeName(name)+" { }\n";
+  result += indent(1) + "export = "+translateInterfaceName(shortName)+";\n";
   result += "}\n";
   result += "\n";
     
