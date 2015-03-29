@@ -91,3 +91,8 @@ export function testCompileDohEmpty(test: nodeunit.Test): void {
   test.ok( testCompile("test_files/doh_empty.ts") );
   test.done();
 }
+
+export function testCompileDojoOn(test: nodeunit.Test): void {
+  test.ok( testCompile("test_files/dojo_on.ts") );
+  test.done();
+}

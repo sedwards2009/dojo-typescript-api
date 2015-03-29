@@ -124,3 +124,16 @@ declare module "dojo/store/Memory" {
     index?: Object;
   }
 }
+
+declare module dojo {
+  module on {
+    interface EventListenerHandle {
+      remove(): void;
+    }
+  }
+}
+declare module "dojo/on" {
+  interface EventListenerHandle {
+    remove(): void;
+  }
+}

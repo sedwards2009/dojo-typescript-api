@@ -125,15 +125,31 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
     // Output the module definition.
     result += formatDocs(namespace, 0);
     result += 'declare module "' + namespace.location + '" {\n';
-    result += formatNamespaceFunctions(namespace, 1);
-
+    
     if (namespace.type === "function") {
       result += indent(1) + "var default_export: {\n";
       let returnTypesString = formatReturnTypes(namespace.returnTypes);
       result += formatParameters(namespace.parameters).map(
         (paramsStr) => indent(2) + "(" +  paramsStr + "): " + returnTypesString + ";\n").join("");
+
+      level++;
+      level++;
+      if (namespace.properties !== undefined) {
+        result += formatProperties(namespace.properties, level);
+      }
+
+      if (namespace.methods !== undefined) {
+        result += formatMethods(namespace.methods, level);
+      }
+      level--;
+      level--;
+      
       result += indent(1) + "};\n";
+      
+      
       result += indent(1) + "export=default_export;\n";
+    } else {
+      result += formatNamespaceFunctions(namespace, 1);
     }
 
     result += "}\n";
@@ -318,7 +334,7 @@ function formatProperties(properties: DojoProperty[], level: number): string {
 }
 
 function formatMethods(methods: DojoMethod[], level: number): string {
-  return methods.filter( (m) => !isDojoInterface(m.from, m.name)  ).map( (method) => formatMethod(method, level)).join("\n");
+  return methods.map( (method) => formatMethod(method, level)).join("\n");
 }
 
 function formatMethod(method: DojoMethod, level: number): string {
@@ -501,11 +517,7 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       namespace = deleteMethods(namespace, ["|"]);
     }
   }
-  
-  if (name === "doh/main") {
-    namespace = deleteMethods(namespace, ["Deferred"]);
-  }
-  
+    
   switch(name) {
     case "dojo/dnd/Container":
       namespace = <DojoNamespace> _.cloneDeep(namespace);
@@ -541,6 +553,15 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
     case "dojo/store/Memory":
       namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.parameters[0].types[0] = "dojo.store._MemoryOptions";
+      break;
+      
+    case "dojo/store/api/Store":
+      namespace = deleteMethods(namespace, [
+        "PutDirectives",
+        "QueryOptions",
+        "QueryResults",
+        "SortInformation",
+        "Transaction"]);
       break;
       
     case "dojo/store/api/Store.QueryOptions":
@@ -581,7 +602,40 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
     case "dijit/_editor/_Plugin.registry":
       namespace = deleteMethods(namespace, ["delete"]);
       break;
+    case "doh/main":
+      namespace = deleteMethods(namespace, ["Deferred"]);
+      break;
       
+    case "dojo/on":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.returnTypes = ["EventListenerHandle"];
+      namespace.parameters.forEach( (p) => {
+        if (p.name === "dontFix") {
+          p.usage = "optional";
+        }
+        if (p.name === "type") {
+          p.types.push("string[]");
+        }
+      });
+      
+      namespace.methods.forEach( (m) => {
+        if (m.name === "matches" || m.name === "selector") {
+          m.parameters.forEach( (p) => {
+            if (p.name === "children") {
+              p.usage = "optional";
+            }
+          });
+        }
+        
+        m.parameters.forEach( (p) => {
+          if (p.name === "dontFix") {
+            p.usage = "optional";
+          }
+        });
+        
+      });
+      break;
+    
     default:
       break;
   }
@@ -721,7 +775,6 @@ export function formatType(t: string): string {
     case "object":
     case "Container.__ContainerArgs":
     case "CriteriaBox":
-    case "Handle":
     case "OpenLayers.Projection":
     case "StencilData":
     case "__printArgs":
@@ -732,7 +785,6 @@ export function formatType(t: string): string {
     case "DataSource":
     case "Pointer":
     case "attributes[]":
-    case "handle":
     case "point":
     case "(in":
     case "out)keywordArgs":
@@ -741,6 +793,10 @@ export function formatType(t: string): string {
     case "data item":
     case "Stream":
       result = "Object";
+      break;
+    case "Handle":
+    case "handle":
+      result = "dojo.on.EventListenerHandle";
       break;
     case "Object...":
     case "StencilPoints":

@@ -66,4 +66,9 @@ declare module "doh/main" {
     callback(value: any): void;
     errback(value: any): void;
   }
+  
+  function is(expected: any, actual: any, hint: string, doNotThrow?: any): any;
+  function is(expected: any, actual: any, doNotThrow?: any): any;
+  function isNot(notExpected: any, actual: any, hint?: string): any;
+
 }
