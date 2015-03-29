@@ -635,7 +635,31 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
         
       });
       break;
-    
+      
+    case "dijit/main.registry":
+    case "dijit/registry":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.methods.forEach( (m) => {
+        switch (m.name) {
+          case "byId":
+          case "byNode":
+            m.returnTypes = ["dijit/_WidgetBase"];
+            break;
+          default:
+            break;
+        }
+      });
+      break;
+      
+    case "dijit/ColorPalette":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.properties.forEach( (p) => {
+        if (p.name === "_palettes") {
+          p.types = ["Map<string, string[][]>"];
+        }
+      });
+      break;
+      
     default:
       break;
   }
@@ -798,6 +822,9 @@ export function formatType(t: string): string {
     case "handle":
       result = "dojo.on.EventListenerHandle";
       break;
+    case "Handle[]":
+      result = "dojo.on.EventListenerHandle[]";
+      break;        
     case "Object...":
     case "StencilPoints":
     case "Points[]":
@@ -984,12 +1011,20 @@ export function formatType(t: string): string {
     case "instance":
     case "jsx3.xml.Entity":
     case "Hash":
+    case "dojo/data/Item":
       result = "any";
       break;
     case "Anything[]":
     case "__SelectItem[]":
+    case "Item[]":
     case "item[]":
       result = "any[]";
+      break;
+    case "Item[][]":
+      result = "any[][]";
+      break;
+    case "String[][]":
+      result = "string[][]";
       break;
     case "RegExp":
     case "RegEx":
@@ -1063,6 +1098,8 @@ export function formatType(t: string): string {
       break;
     case "String or String[]":
       return "string|string[]";
+    case "dojo/keys":
+      return "number";
     default:
       break;
   }

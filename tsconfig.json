@@ -18,7 +18,6 @@
     ],
     "files": [
         "./DojoDetailsInterface.ts",
-        "./_dojo.d.ts",
         "./generate_all.ts",
         "./generator.ts",
         "./main.ts",
