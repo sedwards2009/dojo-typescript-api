@@ -657,9 +657,20 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
         if (p.name === "_palettes") {
           p.types = ["Map<string, string[][]>"];
         }
+        if (p.name === "dyeClass") {
+          p.types = ["Function"];
+        }
       });
       break;
       
+    case "dijit/_PaletteMixin":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.properties.forEach( (p) => {
+        if (p.name === "dyeClass") {
+          p.types = ["Function"];
+        }
+      });
+        
     default:
       break;
   }
@@ -870,6 +881,7 @@ export function formatType(t: string): string {
     case "name:":
     case "summary:":
     case "URI":
+    case "dojo/string":
       result = "string";
       break;
     case "String[]":
@@ -1028,6 +1040,7 @@ export function formatType(t: string): string {
       break;
     case "RegExp":
     case "RegEx":
+    case "Regex":
       result = "RegExp";
       break;
     case "DOMEvent":
