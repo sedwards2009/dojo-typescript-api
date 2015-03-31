@@ -670,6 +670,44 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
           p.types = ["Function"];
         }
       });
+      break;
+      
+    case "dijit/ColorPalette._Color":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.properties.forEach( (p) => {
+        if (p.name === "_imagePaths") {
+          p.types = ["Map<string,string>"];
+        }
+      });
+      break;
+      
+    case "dijit/DialogUnderlay":
+      namespace = deleteMethods(namespace, ["_setClassAttr"]);
+      break;
+    case "dijit/ProgressBar":
+      namespace = deleteMethods(namespace, ["_setDirAttr"]);
+      break;
+      
+    case "dijit/Tree":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.methods.forEach( (m) => {
+        switch (m.name) {
+          case "_setSelectedItemAttr":
+          case "getNodesByItem":
+            m.parameters[0].types = ["any"];
+            break;
+          case "_setSelectedItemsAttr":
+            m.parameters[0].types = ["any[]"];
+            break;
+          default:
+            break;
+        }
+      });
+      break;
+      
+    case "dijit/form/FilteringSelect":
+      namespace = deleteMethods(namespace, ["_setDisplayedValueAttr", "_setValueAttr"]);
+      break;
         
     default:
       break;
@@ -747,6 +785,7 @@ export function formatType(t: string): string {
     case "HtmlNode":
     case "Dom":
     case "Node;":
+    case "node":
       result = "HTMLElement";
       break;
     case "EnhancedGrid":
@@ -1104,15 +1143,26 @@ export function formatType(t: string): string {
       result = "any";
       break;
     case "Items or ids":
-      return "Item[]|string[]|number[]";
+      result = "Item[]|string[]|number[]";
       break;
     case "Item or id":
-      return "Item|string|number";
+      result = "Item|string|number";
       break;
     case "String or String[]":
-      return "string|string[]";
+      result = "string|string[]";
+      break;
     case "dojo/keys":
-      return "number";
+      result = "number";
+      break;
+    case "HTMLIframeElement":
+      result = "HTMLIFrameElement";
+      break;
+    case "dojo/data/Store":
+      result = "dojo.store.api.Store";
+      break;
+    case "TimePicker.__Constraints":
+      result = "dijit._TimePicker.__Constraints";
+      break;
     default:
       break;
   }
