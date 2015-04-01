@@ -516,8 +516,13 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
     if (containsMethod(namespace, "|")) {
       namespace = deleteMethods(namespace, ["|"]);
     }
-  }
     
+    const filter = (from: string) => from.indexOf("dijit/") === -1 && from.indexOf("dojo/") === -1;
+    if (containsExtensions(namespace, filter)) {
+      namespace = deleteExtensions(namespace, filter);
+    }
+  }
+
   switch(name) {
     case "dojo/dnd/Container":
       namespace = <DojoNamespace> _.cloneDeep(namespace);
@@ -708,7 +713,7 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
     case "dijit/form/FilteringSelect":
       namespace = deleteMethods(namespace, ["_setDisplayedValueAttr", "_setValueAttr"]);
       break;
-        
+      
     default:
       break;
   }
@@ -744,6 +749,28 @@ function deleteMethods(originalNamespace: DojoNamespace, methodNames: string[]):
   }
   const namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
   namespace.methods = namespace.methods.filter( (m) => methodNames.indexOf(m.name) === -1);
+  return namespace;
+}
+
+function containsExtensions(namespace: DojoNamespace, filter: (from: string) => boolean): boolean {
+  return (namespace.properties !== undefined && namespace.properties.some( (p) => p.extensionModule && filter(p.from) )) ||
+      (namespace.methods !== undefined && namespace.methods.some( (m) => m.extensionModule && filter(m.from) ));
+}
+
+function deleteExtensions(originalNamespace: DojoNamespace, filter: (from: string) => boolean): DojoNamespace {
+  if (originalNamespace.properties === undefined && originalNamespace.methods === undefined) {
+    return originalNamespace;
+  }
+  
+  const namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+  if (namespace.methods !== undefined) {
+    namespace.methods = namespace.methods.filter( (m) => !(m.extensionModule && filter(m.from)));
+  }
+
+  if (namespace.properties !== undefined) {
+    namespace.properties = namespace.properties.filter ( (p) => !(p.extensionModule && filter(p.from)) );
+  }
+       
   return namespace;
 }
 

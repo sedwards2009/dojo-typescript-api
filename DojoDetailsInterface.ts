@@ -11,6 +11,7 @@ export interface DojoProperty {
   types: string[];
   from: string;
   usage?: string;
+  extensionModule?: boolean;
 }
 
 export interface DojoDocumentedEntity {
@@ -26,6 +27,7 @@ export interface DojoMethod extends DojoDocumentedEntity {
   name: string;
   scope: string;
   from: string;  
+  extensionModule?: boolean;
 }
 
 export interface DojoNamespace extends DojoDocumentedEntity {
