@@ -701,6 +701,33 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       });
       break;
       
+    case "dijit/form/ComboButton":
+      namespace = deleteMethods(namespace, ["focus"]);
+      break;
+      
+    case "dijit/form/_DateTimeTextBox":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.properties.forEach( (p) => {
+        if (p.name === "popupClass") {
+          p.types = ["Function"];
+        }
+      });
+      break;
+      
+    case "dijit/form/DateTextBox":
+    case "dijit/form/TimeTextBox":
+      namespace = deleteMethods(namespace, ["popupClass"]);
+      break;
+      
+    case "dijit/form/_FormValueWidget":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.properties.forEach( (p) => {
+        if (p.name === "value") {
+          p.types = ["any"];
+        }
+      });
+      break;
+      
     default:
       break;
   }
@@ -1065,6 +1092,7 @@ export function formatType(t: string): string {
     case "function":
     case "Function":
     case "Class":
+    case "Constructor":
       result = "Function";
       break;
     case "void":
