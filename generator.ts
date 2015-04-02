@@ -521,6 +521,8 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
     if (containsExtensions(namespace, filter)) {
       namespace = deleteExtensions(namespace, filter);
     }
+    
+    namespace = fixGettersSetters(namespace);
   }
 
   switch(name) {
@@ -686,32 +688,17 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       });
       break;
       
-    case "dijit/DialogUnderlay":
-      namespace = deleteMethods(namespace, ["_setClassAttr"]);
-      break;
-    case "dijit/ProgressBar":
-      namespace = deleteMethods(namespace, ["_setDirAttr"]);
-      break;
-      
     case "dijit/Tree":
       namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.methods.forEach( (m) => {
         switch (m.name) {
-          case "_setSelectedItemAttr":
           case "getNodesByItem":
             m.parameters[0].types = ["any"];
-            break;
-          case "_setSelectedItemsAttr":
-            m.parameters[0].types = ["any[]"];
             break;
           default:
             break;
         }
       });
-      break;
-      
-    case "dijit/form/FilteringSelect":
-      namespace = deleteMethods(namespace, ["_setDisplayedValueAttr", "_setValueAttr"]);
       break;
       
     default:
@@ -771,6 +758,76 @@ function deleteExtensions(originalNamespace: DojoNamespace, filter: (from: strin
     namespace.properties = namespace.properties.filter ( (p) => !(p.extensionModule && filter(p.from)) );
   }
        
+  return namespace;
+}
+
+/**
+ * Fix the signatures of Dijit style setters and getters
+ */
+function fixGettersSetters(originalNamespace: DojoNamespace): DojoNamespace {
+  const namespace = <DojoNamespace> _.cloneDeep(originalNamespace);
+  
+  const isSetter = (name: string) => name.search(/^_set.*Attr$/) !== -1;
+  const isGetter = (name: string) => name.search(/^_get.*Attr$/) !== -1;
+  
+  let properties = namespace.properties === undefined ? [] : namespace.properties;
+  
+  const setterProperties = properties.filter( (p) => isSetter(p.name));
+  const getterProperties = properties.filter( (p) => isGetter(p.name));
+  
+  // Clean up the setter and getter properties.
+  properties = properties.filter( (p) => !isSetter(p.name) && !isGetter(p.name) );
+  namespace.properties = properties;
+  
+  if (namespace.methods !== undefined) {
+    namespace.methods.forEach( (m) => {
+      if (isSetter(m.name)) {
+        m.parameters = [
+          { name: "value",
+          types: ["any"],
+          usage: "value to set"
+          }];
+        m.returnTypes = ["void"];
+
+      } else if (isGetter(m.name)) {
+        m.parameters = [];
+        m.returnTypes = ["any"];
+      }
+    });
+  }  
+
+  if (setterProperties.length !== 0 || getterProperties.length !== 0) {
+    if (namespace.methods === undefined) {
+      namespace.methods = [];
+    }
+
+    // Add in the setter/getter properties as methods.
+    setterProperties.forEach( (p) => {
+      namespace.methods.push({
+        name: p.name,
+        scope: p.scope,
+        from: p.from,
+        parameters: [{ name: "value",
+          types: ["any"],
+          usage: "value to set"
+        }],
+        returnTypes: ["void"],
+        summary: ""
+      });
+    });
+    
+    getterProperties.forEach( (p) => {
+      namespace.methods.push({
+        name: p.name,
+        scope: p.scope,
+        from: p.from,
+        parameters: [],
+        returnTypes: ["any"],
+        summary: ""
+      });
+    });
+  }
+  
   return namespace;
 }
 
