@@ -712,11 +712,12 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
           p.types = ["Function"];
         }
       });
+      namespace = deleteMethods(namespace, ["pattern"]);
       break;
       
     case "dijit/form/DateTextBox":
     case "dijit/form/TimeTextBox":
-      namespace = deleteMethods(namespace, ["popupClass"]);
+      namespace = deleteMethods(namespace, ["popupClass", "pattern"]);
       break;
       
     case "dijit/form/_FormValueWidget":
@@ -728,6 +729,16 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       });
       break;
       
+    case "dijit/form/ValidationTextBox":
+    case "dijit/form/RangeBoundTextBox":
+    case "dijit/form/MappedTextBox":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.properties.forEach( (p) => {
+        if (p.name === "pattern") {
+          p.types = ["string", "Function"];
+        }
+      });
+      break;
     default:
       break;
   }
