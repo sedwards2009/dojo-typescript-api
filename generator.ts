@@ -710,16 +710,30 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       namespace.properties.forEach( (p) => {
         if (p.name === "popupClass") {
           p.types = ["Function"];
+        } else if (p.name === "value") {
+          p.types = ["any"];
+        }
+      });
+      namespace.methods.forEach( (m) => {
+        if (m.name === "format") {
+          m.parameters[0].types = ["any"];
         }
       });
       namespace = deleteMethods(namespace, ["pattern"]);
       break;
       
     case "dijit/form/DateTextBox":
-    case "dijit/form/TimeTextBox":
       namespace = deleteMethods(namespace, ["popupClass", "pattern"]);
       break;
-      
+    case "dijit/form/TimeTextBox":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.properties.forEach( (p) => {
+        if (p.name === "constraints") {
+          p.types = ["_DateTimeTextBox.__Constraints"];
+        }
+      });
+      namespace = deleteMethods(namespace, ["popupClass", "pattern"]);
+      break;
     case "dijit/form/_FormValueWidget":
       namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.properties.forEach( (p) => {
@@ -739,6 +753,44 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
         }
       });
       break;
+      
+    case "dijit/form/HorizontalSlider._Mover":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.methods.forEach( (m) => {
+        if (m.name === "destroy") {
+          m.parameters = [];
+        }
+      });      
+      break;
+      
+    case "dijit/layout/StackController.StackButton":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.methods.forEach( (m) => {
+        if (m.name === "buildRendering") {
+          m.parameters = [];
+        }
+      });      
+      break;
+      
+    case "dijit/form/Select":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.methods.forEach( (m) => {
+        if (m.name === "_loadChildren" || m.name === "destroy") {
+          m.parameters[0].usage = "optional";
+        }
+      });            
+      break;
+
+    case "dijit/form/HorizontalRuleLabels":
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.methods.forEach( (m) => {
+        if (m.name === "_genHTML") {
+          m.parameters[1].usage = "optional";
+        }
+      });            
+      
+      break;
+      
     default:
       break;
   }
