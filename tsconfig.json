@@ -24,6 +24,7 @@
         "./test.ts",
         "./test_files/date_locale.ts",
         "./test_files/date_stamp.ts",
+        "./test_files/dijit_DateTextBox.ts",
         "./test_files/dijit_empty.ts",
         "./test_files/doh_empty.ts",
         "./test_files/dojo__base_lang.ts",

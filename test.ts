@@ -96,3 +96,8 @@ export function testCompileDojoOn(test: nodeunit.Test): void {
   test.ok( testCompile("test_files/dojo_on.ts") );
   test.done();
 }
+
+export function testCompileDijitDateTextBox(test: nodeunit.Test): void {
+  test.ok( testCompile("test_files/dijit_DateTextBox.ts") );
+  test.done();
+}

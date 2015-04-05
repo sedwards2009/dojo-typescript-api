@@ -517,6 +517,15 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       namespace = deleteMethods(namespace, ["|"]);
     }
     
+    if (containsMethod(namespace, "isValid")) {
+      namespace = <DojoNamespace> _.cloneDeep(namespace);
+      namespace.methods.forEach( (m) => {
+        if (m.name === "isValid" && m.parameters.length === 1 && m.parameters[0].name === "isFocused") {
+          m.parameters[0].usage = "optional";
+        }
+      });
+    }
+    
     const filter = (from: string) => from.indexOf("dijit/") === -1 && from.indexOf("dojo/") === -1;
     if (containsExtensions(namespace, filter)) {
       namespace = deleteExtensions(namespace, filter);
@@ -715,15 +724,33 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
         }
       });
       namespace.methods.forEach( (m) => {
-        if (m.name === "format") {
+        if (m.name === 'format') {
           m.parameters[0].types = ["any"];
         }
+        
+        if (m.name === 'parse' || m.name === 'format') {
+          m.parameters[1].types = ["_DateTimeTextBox.__Constraints"];
+        } else if (m.name === "openDropDown" || m.name === "closeDropDown") {
+          m.parameters[0].usage = "optional";
+        }
+        
       });
       namespace = deleteMethods(namespace, ["pattern"]);
       break;
       
     case "dijit/form/DateTextBox":
       namespace = deleteMethods(namespace, ["popupClass", "pattern"]);
+      namespace.methods.forEach( (m) => {
+        if (m.name === 'format') {
+          m.parameters[0].types = ["any"];
+        }
+        
+        if (m.name === 'parse' || m.name === 'format') {
+          m.parameters[1].types = ["_DateTimeTextBox.__Constraints"];
+        } else if (m.name === "openDropDown" || m.name === "closeDropDown") {
+          m.parameters[0].usage = "optional";
+        }
+      });      
       break;
     case "dijit/form/TimeTextBox":
       namespace = <DojoNamespace> _.cloneDeep(namespace);
