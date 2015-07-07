@@ -1,4 +1,3 @@
-/// <reference path="typings/tsd.d.ts" />
 "use strict";
 
 // Unittests for use with nodeunit https://github.com/caolan/nodeunit
@@ -32,7 +31,7 @@ export function setUp(callback: Function): void {
 
 function testCompile(filename: string): boolean {
   try {
-    child_process.execSync(`tsc --target es6 --module commonjs --outDir ${TMP_DIR} ${filename}`);
+    child_process.execSync(`tsc --target es5 --outDir ${TMP_DIR} ${filename}`);
   } catch(e) {
     console.log(formatChildProcessError(e));
     return false;

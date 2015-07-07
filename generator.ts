@@ -1,4 +1,3 @@
-/// <reference path="typings/tsd.d.ts" />
 "use strict";
 import stream = require('stream');
 import _ = require('lodash');
@@ -428,11 +427,18 @@ function formatParameters(parameters: DojoParameter[]): string[] {
   }
   
   let range = 1 << weirdOptionals;
+  
+  // 'let's outside the loep is a weird work around for some tsc funky-ness.
+  let optionalCount;  
+  let mask;
+  let comma;
+  let line;
+
   for (let i=0; i<range; i++) {
-    let optionalCount = 0;
-    let mask = i;
-    let comma = "";
-    let line = "";
+    optionalCount = 0;
+    mask = i;
+    comma = "";
+    line = "";
     
     parameters.forEach( (parameter) => {
       
