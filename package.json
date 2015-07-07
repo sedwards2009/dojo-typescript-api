@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nodeunit target/test.js",
-    "make": "tsc --target es6 --outDir target/ --module commonjs main.ts test.ts",
+    "build": "tsc",
     "run": "node target/main.js"
   },
   "author": "",
