@@ -31,7 +31,7 @@ export function setUp(callback: Function): void {
 
 function testCompile(filename: string): boolean {
   try {
-    child_process.execSync(`tsc --target es5 --outDir ${TMP_DIR} ${filename}`);
+    child_process.execSync(`tsc --target es5 --noLib --module commonjs --outDir ${TMP_DIR} typings/lib.es6.d.ts ${filename}`);
   } catch(e) {
     console.log(formatChildProcessError(e));
     return false;

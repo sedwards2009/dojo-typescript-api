@@ -123,13 +123,14 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
     
     // Output the module definition.
     result += formatDocs(namespace, 0);
-    result += 'declare module "' + namespace.location + '" {\n';
     
     if (namespace.type === "function") {
-      result += indent(1) + "var default_export: {\n";
+      const defaultSymbolName = namespace.location.split(/\//g).join("_") + "_default_export";
+      
+      result += "declare var " + defaultSymbolName + ": {\n";
       let returnTypesString = formatReturnTypes(namespace.returnTypes);
       result += formatParameters(namespace.parameters).map(
-        (paramsStr) => indent(2) + "(" +  paramsStr + "): " + returnTypesString + ";\n").join("");
+        (paramsStr) => indent(1) + "(" +  paramsStr + "): " + returnTypesString + ";\n").join("");
 
       level++;
       level++;
@@ -143,15 +144,18 @@ function formatModule(namespace: DojoNamespace, level: number=0): string {
       level--;
       level--;
       
-      result += indent(1) + "};\n";
-      
-      
-      result += indent(1) + "export=default_export;\n";
+      result += "};\n";
+
+      result += 'declare module "' + namespace.location + '" {\n';
+      result += indent(1) + "export=" + defaultSymbolName + ";\n";
+      result += "}\n";
+
     } else {
+      result += 'declare module "' + namespace.location + '" {\n';
       result += formatNamespaceFunctions(namespace, 1);
+      result += "}\n";
     }
 
-    result += "}\n";
     result += "\n";
   }
 
@@ -574,7 +578,7 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       
     case "dojo/store/Memory":
       namespace = <DojoNamespace> _.cloneDeep(namespace);
-      namespace.parameters[0].types[0] = "dojo.store._MemoryOptions";
+      namespace.parameters[0].types[0] = "dojo_store_MemoryOptions";
       break;
       
     case "dojo/store/api/Store":
@@ -677,7 +681,7 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.properties.forEach( (p) => {
         if (p.name === "_palettes") {
-          p.types = ["Map<string, string[][]>"];
+          p.types = ["{ [key: string]: string[][]; }"];
         }
         if (p.name === "dyeClass") {
           p.types = ["Function"];
@@ -698,7 +702,7 @@ function patchModuleNamespace(originalNamespace: DojoNamespace): DojoNamespace {
       namespace = <DojoNamespace> _.cloneDeep(namespace);
       namespace.properties.forEach( (p) => {
         if (p.name === "_imagePaths") {
-          p.types = ["Map<string,string>"];
+          p.types = ["{ [key: string]: string; }"];
         }
       });
       break;
@@ -1077,10 +1081,10 @@ export function formatType(t: string): string {
       break;
     case "Handle":
     case "handle":
-      result = "dojo.on.EventListenerHandle";
+      result = "EventListenerHandle";
       break;
     case "Handle[]":
-      result = "dojo.on.EventListenerHandle[]";
+      result = "EventListenerHandle[]";
       break;        
     case "Object...":
     case "StencilPoints":

@@ -108,32 +108,12 @@ declare module "dojo/_base/lang" {
   function delegate(obj: Object, props: Object): any;
 }
 
-declare module dojo {
-  module store {
-    interface _MemoryOptions {
-      data: any[] | { items: any[]; identifier: string; };
-      idProperty?: string;
-      index?: Object;
-    }
-  }
-}
-declare module "dojo/store/Memory" {
-  interface _MemoryOptions {
-    data: any[] | { items: any[]; identifier: string; };
-    idProperty?: string;
-    index?: Object;
-  }
+interface dojo_store_MemoryOptions {
+  data: any[] | { items: any[]; identifier: string; };
+  idProperty?: string;
+  index?: Object;
 }
 
-declare module dojo {
-  module on {
-    interface EventListenerHandle {
-      remove(): void;
-    }
-  }
-}
-declare module "dojo/on" {
-  interface EventListenerHandle {
-    remove(): void;
-  }
+interface EventListenerHandle {
+  remove(): void;
 }
