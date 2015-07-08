@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "amd",
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": false,
+        "noLib": true,
+        "outDir": "target/"
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!../output/**/*.ts",
+        "../typings/lib.es6.d.ts"
+    ],
+    "files": [
+        "./date_locale.ts",
+        "./date_stamp.ts",
+        "./dijit_DateTextBox.ts",
+        "./dijit_empty.ts",
+        "./doh_empty.ts",
+        "./dojo__base_lang.ts",
+        "./dojo_on.ts",
+        "./dojo_store_datastore.ts",
+        "./dojo_store_memory.ts",
+        "./test_harness.d.ts",
+        "../typings/lib.es6.d.ts"
+    ]
+}
